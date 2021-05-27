@@ -1,0 +1,7 @@
+*.pyc
+.vscode/
+data/b01lers-bot.db
+data/bot.log
+data/config.*
+venv/
+tags
