@@ -1,0 +1,5 @@
+discord.py
+email_validator
+beautifulsoup4
+requests
+PyGithub
