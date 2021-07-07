@@ -144,6 +144,14 @@ async def invite_role(message, *args):
     """!inviterole <@team-role-1> [@team-role-2] [@team-role-3] [@team-role-4]
     Use in a CTF channel. Allows members of the specified role(s) to access a CTF channel."""
 
+    if not message.channel.category.name.lower() == "live ctfs":
+        await message.channel.send(
+            embed=utils.create_embed(
+                "Please use this command in a live ctfs channel only!"
+            )
+        )
+        return
+
     successful_roles = []
     for role in args:
         try:
