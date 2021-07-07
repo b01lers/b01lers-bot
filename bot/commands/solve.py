@@ -58,7 +58,7 @@ async def submit_solve(message, *args):
     if category not in CTF_CHAL_CATEGORIES:
         await message.channel.send(
             embed=utils.create_embed(
-                "Make sure `<category>` is one of `re`, `pwn`, `web`, `crypto`, `forensics`, or `other`!"
+                f"Make sure `<category>` is one of {', '.join(map(lambda x: f'`{x}`', CTF_CHAL_CATEGORIES))}!"
             )
         )
         return

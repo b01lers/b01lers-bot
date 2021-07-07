@@ -28,10 +28,11 @@ UPDATE_CHANNEL = CONFIG["discord"]["update-channel"]
 APPROVAL_CHANNEL = CONFIG["discord"]["approval-channel"]
 LIVE_CTF_CATEGORY = CONFIG["discord"]["ctf-category"]
 ARCHIVE_CATEGORY = CONFIG["discord"]["archive-category"]
+DB_PATH = CONFIG["files"]["database-path"]
+DB_BK_PATH = CONFIG["files"]["backup-path"]
+
 
 ### CONSTANTS ###
-DB_PATH = "/opt/b01lers-bot/data/b01lers-bot.db"
-DB_BK_PATH = "/home/b01lers/b01lers-bot-{0}.db"
 EMBED_COLOR = 0xC1000C
 ERROR_COLOR = 0x203354
 SECONDS_PER_DAY = 86400

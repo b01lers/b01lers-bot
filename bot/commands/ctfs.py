@@ -139,6 +139,33 @@ async def archive_competition(message, *args):
 
     return
 
+@client.register("!inviterole", (1, 4), {"dm": False, "officer": True})
+async def invite_role(message, *args):
+    """!inviterole <@team-role-1> [@team-role-2] [@team-role-3] [@team-role-4]
+    Use in a CTF channel. Allows members of the specified role(s) to access a CTF channel."""
+
+    successful_roles = []
+    for role in args:
+        try:
+            role_id = int(utils.parse_uid(role))
+            guild_role = client.guild.get_role(role_id)
+            if guild_role == None:
+                raise Exception() # totally a hack lmao
+            await message.channel.set_permissions(guild_role, read_messages=True, send_messages=True)
+            successful_roles.append(role)
+        except:
+            await message.channel.send(
+                embed=utils.create_embed(
+                    f"Could not invite role {role} to channel."
+                )
+            )
+    
+    await message.channel.send(
+        embed=utils.create_embed(
+            f"Have fun, {', '.join(successful_roles)}!"
+        )
+    )
+    
 
 @client.register("!ctfregister", (1, 4), {"channel": False})
 async def ctf_register(message, *args):

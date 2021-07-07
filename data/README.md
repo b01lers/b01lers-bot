@@ -25,6 +25,10 @@ This file stores ID's of the server, channels, and categories that this bot oper
         "approval-channel": ##################,
         "ctf-category": ##################,
         "archive-category": ##################
+    },
+    "files": {
+        "database-path": "/xxxx/xxxx/b01lers-bot.db",
+        "backup-path": "/xxxx/xxxx/b01lers-bot-{0}.db"
     }
 }
 ```

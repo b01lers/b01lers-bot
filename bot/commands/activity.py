@@ -6,7 +6,7 @@ from bot import utils, database, participation
 from bot.constants import *
 
 
-@client.register("!rank", (0, 0), {"channel": False})
+@client.register("!rank", (0, 0))
 async def server_rank(message, *args):
     """!rank
     Displays how many points you have in ths server."""
@@ -28,7 +28,7 @@ async def server_rank(message, *args):
     return
 
 
-@client.register("!stats", (0, 0), {"channel": False})
+@client.register("!stats", (0, 0))
 async def server_stats(message, *args):
     """!stats
     Displays your CTF solve statistics."""
