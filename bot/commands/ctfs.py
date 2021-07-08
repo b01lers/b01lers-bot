@@ -139,10 +139,10 @@ async def archive_competition(message, *args):
 
     return
 
-@client.register("!inviterole", (1, 4), {"dm": False, "officer": True})
-async def invite_role(message, *args):
-    """!inviterole <@team-role-1> [@team-role-2] [@team-role-3] [@team-role-4]
-    Use in a CTF channel. Allows members of the specified role(s) to access a CTF channel."""
+@client.register("!include", (1, 4), {"dm": False, "officer": True})
+async def include(message, *args):
+    """!include <@mention-1> [@mention-2] [@mention-3] [@mention-4]
+    Gives roles or users access to a CTF channel."""
 
     if not message.channel.category.name.lower() == "live ctfs":
         await message.channel.send(
@@ -152,28 +152,66 @@ async def invite_role(message, *args):
         )
         return
 
-    successful_roles = []
-    for role in args:
+    successful_joins = []
+    for obj in args:
         try:
-            role_id = int(utils.parse_uid(role))
-            guild_role = client.guild.get_role(role_id)
-            if guild_role == None:
+            obj_id = int(utils.parse_uid(obj))
+            role = client.guild.get_role(obj_id)
+            user = client.guild.get_member(obj_id)
+            if role == None and user == None:
                 raise Exception() # totally a hack lmao
-            await message.channel.set_permissions(guild_role, read_messages=True, send_messages=True)
-            successful_roles.append(role)
+            await message.channel.set_permissions(role or user, read_messages=True, send_messages=True)
+            successful_joins.append(obj)
         except:
             await message.channel.send(
                 embed=utils.create_embed(
-                    f"Could not invite role {role} to channel."
+                    f"Could not invite {obj} to channel."
                 )
             )
     
     await message.channel.send(
         embed=utils.create_embed(
-            f"Have fun, {', '.join(successful_roles)}!"
+            f"Have fun, {', '.join(successful_joins)}!"
         )
     )
+
+
+@client.register("!exclude", (1, 4), {"dm": False, "officer": True})
+async def exclude(message, *args):
+    """!exclude <@mention-1> [@mention-2] [@mention-3] [@mention-4]
+    Removes roles' or users' access from a CTF channel."""
+
+    if not message.channel.category.name.lower() == "live ctfs":
+        await message.channel.send(
+            embed=utils.create_embed(
+                "Please use this command in a live ctfs channel only!"
+            )
+        )
+        return
+
+    successful_leaves = []
+    for obj in args:
+        try:
+            obj_id = int(utils.parse_uid(obj))
+            role = client.guild.get_role(obj_id)
+            user = client.guild.get_member(obj_id)
+            if role == None and user == None:
+                raise Exception() # totally a hack lmao
+            await message.channel.set_permissions(role or user, read_messages=False, send_messages=False)
+            successful_leaves.append(obj)
+        except:
+            await message.channel.send(
+                embed=utils.create_embed(
+                    f"Could not remove {obj} from channel."
+                )
+            )
     
+    await message.channel.send(
+        embed=utils.create_embed(
+            f"Goodbye, {', '.join(successful_leaves)}. :pensive:"
+        )
+    )
+
 
 @client.register("!ctfregister", (1, 4), {"channel": False})
 async def ctf_register(message, *args):
