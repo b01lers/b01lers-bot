@@ -139,9 +139,9 @@ async def archive_competition(message, *args):
 
     return
 
-@client.register("!include", (1, 4), {"dm": False, "officer": True})
-async def include(message, *args):
-    """!include <@mention-1> [@mention-2] [@mention-3] [@mention-4]
+@client.register("!invite", (1, 4), {"dm": False, "officer": True})
+async def invite(message, *args):
+    """!invite <@mention-1> [@mention-2] [@mention-3] [@mention-4]
     Gives roles or users access to a CTF channel."""
 
     if not message.channel.category.name.lower() == "live ctfs":
@@ -176,9 +176,9 @@ async def include(message, *args):
     )
 
 
-@client.register("!exclude", (1, 4), {"dm": False, "officer": True})
-async def exclude(message, *args):
-    """!exclude <@mention-1> [@mention-2] [@mention-3] [@mention-4]
+@client.register("!uninvite", (1, 4), {"dm": False, "officer": True})
+async def uninvite(message, *args):
+    """!uninvite <@mention-1> [@mention-2] [@mention-3] [@mention-4]
     Removes roles' or users' access from a CTF channel."""
 
     if not message.channel.category.name.lower() == "live ctfs":
