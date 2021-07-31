@@ -116,8 +116,11 @@ async def review(message, *args):
 
     for k in data:
         if k == "teammates":
-            user = await client.get_member(t)
-            embed.add_field(name=str(k), value=", ".join(user.mention for t in data[k]))
+            mentions = []
+            for t in data[k]:
+                user = await client.get_member(t)
+                mentions.append(user.mention)
+            embed.add_field(name="teammates", value=", ".join(mentions))
         elif k == "cid":
             embed.add_field(name="ctf", value=client.get_channel(data[k]).mention)
         elif k == "mid":
