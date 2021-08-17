@@ -27,11 +27,9 @@ async def verify_email(message, *args):
             if match:
                 if database.column_name_index("validated", MEMBERS_COLUMNS, match) == 1:
                     await message.author.send(
-                        embed=utils.create_embed("You have already been verified!")
-                    )
-                    member = await client.get_member(message.author.id)
-                    await member.add_roles(
-                        discord.utils.get(client.guild.roles, name="members")
+                        embed=utils.create_embed(
+                            "This email is already verified. If this is in error, contact an officer."
+                        )
                     )
                 else:
                     await message.author.send(
