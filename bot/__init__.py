@@ -112,6 +112,7 @@ class B01lersBotClient(discord.Client):
 
         self.give_voice_points.start()
         await self.ensure_ranks()
+        await self.update_ranks()
 
         logging.info("Bot is ready!")
 
@@ -218,10 +219,14 @@ class B01lersBotClient(discord.Client):
                     if links:
                         database.insert_links(message.channel.id, links)
 
-                    await self.update_rank(message)
+                    await self.update_rank(message.author)
 
-    async def update_rank(self, message):
-        author = message.author
+    async def update_ranks(self):
+        for member in self.guild.members:
+            await self.update_rank(member, bot_channel=True)
+
+    async def update_rank(self, member, bot_channel=False):
+        author = member
         previous_rank_index = -1
 
         for role in author.roles:
@@ -248,8 +253,17 @@ class B01lersBotClient(discord.Client):
                 await author.add_roles(
                     current_rank_role
                 )
-            await self.general_channel.send(
-                f"{message.author.name} has reached rank {ranks.RANK_NAMES[current_rank_index]}!"
+            if not bot_channel:
+                await self.general_channel.send(
+                    f"{author.name} has reached rank {ranks.RANK_NAMES[current_rank_index]}!"
+                )
+            else:
+                await self.bot_channel.send(
+                    f"{author.name} has reached rank {ranks.RANK_NAMES[current_rank_index]}!"
+                )
+
+            await author.send(
+                f"You have reached rank {ranks.RANK_NAMES[current_rank_index]} in b01lers! Remember, you can earn points by chatting, solving ctf challenges and claiming points with the `!solve` command, and more!"
             )
 
     async def on_raw_reaction_add(self, payload):
