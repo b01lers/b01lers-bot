@@ -1,8 +1,9 @@
-import sqlite3
 import itertools
+import sqlite3
 
 from bot import logging
 from bot.constants import *
+from bot.ranks import *
 
 
 def initialize_db():
@@ -18,6 +19,7 @@ def initialize_db():
     c.execute(CREATE_POINTS_LOG_TABLE)
     c.execute(CREATE_COMMAND_APPROVALS_TABLE)
     c.execute(CREATE_LINKS_TABLE)
+    c.execute(CREATE_MEMBER_RANK_TABLE)
     conn.commit()
     return conn, c
 
@@ -118,6 +120,11 @@ def get_points(uid):
     return column_name_index(
         "points", POINTS_COLUMNS, c.execute(GET_USER_POINTS, (uid,)).fetchone()
     )
+
+
+def get_highest_points():
+    c.execute(GET_HIGHEST_POINTS)
+    return c.fetchone()
 
 
 def get_recent_user_points(uid, ptype, mintime):

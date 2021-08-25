@@ -1,8 +1,9 @@
-from datetime import datetime, timedelta
-from threading import Timer
-from shutil import copy2
-from .constants import DB_PATH, DB_BK_PATH
 import time
+from datetime import datetime, timedelta
+from shutil import copy2
+from threading import Timer
+
+from .constants import DB_BK_PATH, DB_PATH
 
 
 def backup_db():

@@ -1,8 +1,7 @@
 import discord
 import email_validator
 
-from bot import client, logging
-from bot import database, utils, mail
+from bot import client, database, logging, mail, utils
 from bot.constants import *
 
 

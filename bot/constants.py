@@ -1,12 +1,11 @@
-import re, json, base64, hashlib
+import base64
+import hashlib
+import json
+import re
 
 try:
-    CONFIG_FILE = open(
-        "data/config.json", "r"
-    )
-    CONFIG_SECRET = open(
-        "data/config.secret", "r"
-    )
+    CONFIG_FILE = open("data/config.json", "r")
+    CONFIG_SECRET = open("data/config.secret", "r")
 except:
     print(
         "Error: Could not open the config.secret file. Ensure the bot is run from the repo directory!"
@@ -25,6 +24,7 @@ SECRET = base64.b64decode(CONFIG["security"]["secret"])
 SECRET_PUB = CONFIG["security"]["secret-pub"]
 GUILD = CONFIG["discord"]["guild"]
 UPDATE_CHANNEL = CONFIG["discord"]["update-channel"]
+GENERAL_CHANNEL = CONFIG["discord"]["general-channel"]
 APPROVAL_CHANNEL = CONFIG["discord"]["approval-channel"]
 LIVE_CTF_CATEGORY = CONFIG["discord"]["ctf-category"]
 ARCHIVE_CATEGORY = CONFIG["discord"]["archive-category"]
@@ -118,6 +118,10 @@ CREATE_LINKS_TABLE = """CREATE TABLE IF NOT EXISTS links
 ADD_NEW_LINK = """INSERT INTO links(cid, link) VALUES(?, ?)"""
 GET_LINKS = """SELECT link FROM links WHERE cid=?"""
 PURGE_LINKS = """DELETE FROM links"""
+
+
+### RANK MANAGEMENT SQL ###
+GET_HIGHEST_POINTS = """SELECT points FROM points ORDER BY points DESC LIMIT 1"""
 
 
 def MESSAGE_TYPE(subtype=""):

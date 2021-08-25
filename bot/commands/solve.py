@@ -1,8 +1,8 @@
-import discord
 import json
 
-from bot import client, logging
-from bot import utils, database, participation
+import discord
+
+from bot import client, database, logging, participation, utils
 from bot.constants import *
 
 

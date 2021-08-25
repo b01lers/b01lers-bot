@@ -1,8 +1,7 @@
-from bot import logging
-from bot import database
-from bot.constants import *
-
 import time
+
+from bot import database, logging
+from bot.constants import *
 
 
 def get_time():
@@ -21,7 +20,9 @@ def generate_hash(record):
     return m.hexdigest()
 
 
-import urllib, requests
+import urllib
+
+import requests
 from bs4 import BeautifulSoup
 
 

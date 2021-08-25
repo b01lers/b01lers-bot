@@ -1,17 +1,18 @@
-import discord
-from discord.ext import tasks
-import traceback
-import logging
-from logging.handlers import RotatingFileHandler
-import datetime
 import asyncio
+import datetime
+import logging
 import random
-import sys
 import re
 import shlex
+import sys
+import traceback
+from logging.handlers import RotatingFileHandler
 
+import discord
+from discord.ext import tasks
+
+from bot import database, participation, ranks, utils
 from bot.constants import *
-from bot import database, utils, participation
 
 
 class Command:
@@ -102,6 +103,7 @@ class B01lersBotClient(discord.Client):
 
     async def on_ready(self):
         self.update_channel = client.get_channel(UPDATE_CHANNEL)
+        self.general_channel = client.get_channel(GENERAL_CHANNEL)
         self.approval_channel = client.get_channel(APPROVAL_CHANNEL)
         self.guild = client.get_guild(GUILD)
         self.ctfs = client.get_channel(LIVE_CTF_CATEGORY)
@@ -109,8 +111,26 @@ class B01lersBotClient(discord.Client):
         self.me = await self.guild.fetch_member(self.user.id)
 
         self.give_voice_points.start()
+        await self.ensure_ranks()
 
         logging.info("Bot is ready!")
+
+    async def ensure_ranks(self):
+        for rank, color in zip(ranks.RANK_NAMES, ranks.RANK_COLORS):
+            role = discord.utils.get(self.guild.roles, name=rank)
+            if role is None:
+                await self.guild.create_role(
+                    name=rank,
+                    hoist=True,
+                    mentionable=True,
+                    color=discord.Colour(color),
+                )
+        self.ranks = (
+            *zip(
+                ranks.generate_ranks(database.get_highest_points(), ranks.RANK_COUNT),
+                ranks.RANK_NAMES,
+            ),
+        )
 
     async def on_member_join(self, member):
         await member.send(
@@ -197,6 +217,35 @@ class B01lersBotClient(discord.Client):
                     links = [x[0] for x in re.findall(URL_REGEX, message.content)]
                     if links:
                         database.insert_links(message.channel.id, links)
+
+                    await self.update_rank(message)
+
+    async def update_rank(self, message):
+        author = message.author
+        previous_rank_index = None
+
+        for role in author.roles:
+            if role.name in ranks.RANK_NAMES:
+                previous_rank_index = ranks.RANK_NAMES.index(role.name)
+
+        current_rank_index = ranks.get_rank(
+            database.get_points(author.id)[0], list(map(lambda r: r[0], self.ranks))
+        )
+
+        if current_rank_index > previous_rank_index:
+            await author.remove_roles(
+                discord.utils.get(
+                    self.guild.roles, name=ranks.RANK_NAMES[previous_rank_index]
+                )
+            )
+            await author.add_roles(
+                discord.utils.get(
+                    self.guild.roles, name=ranks.RANK_NAMES[current_rank_index]
+                )
+            )
+            await self.general_channel.send(
+                f"{message.author.name} has reached rank {ranks.RANK_NAMES[current_rank_index]}!"
+            )
 
     async def on_raw_reaction_add(self, payload):
         cid = payload.channel_id

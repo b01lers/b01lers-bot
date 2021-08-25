@@ -1,9 +1,9 @@
-import discord
-import email_validator
 import os
 
-from bot import client, logging
-from bot import database, utils
+import discord
+import email_validator
+
+from bot import client, database, logging, utils
 from bot.constants import *
 
 
@@ -139,6 +139,7 @@ async def archive_competition(message, *args):
 
     return
 
+
 @client.register("!invite", (1, 4), {"dm": False, "officer": True})
 async def invite(message, *args):
     """!invite <@mention-1> [@mention-2] [@mention-3] [@mention-4]
@@ -159,20 +160,18 @@ async def invite(message, *args):
             role = client.guild.get_role(obj_id)
             user = client.guild.get_member(obj_id)
             if role == None and user == None:
-                raise Exception() # totally a hack lmao
-            await message.channel.set_permissions(role or user, read_messages=True, send_messages=True)
+                raise Exception()  # totally a hack lmao
+            await message.channel.set_permissions(
+                role or user, read_messages=True, send_messages=True
+            )
             successful_joins.append(obj)
         except:
             await message.channel.send(
-                embed=utils.create_embed(
-                    f"Could not invite {obj} to channel."
-                )
+                embed=utils.create_embed(f"Could not invite {obj} to channel.")
             )
-    
+
     await message.channel.send(
-        embed=utils.create_embed(
-            f"Have fun, {', '.join(successful_joins)}!"
-        )
+        embed=utils.create_embed(f"Have fun, {', '.join(successful_joins)}!")
     )
 
 
@@ -196,20 +195,18 @@ async def uninvite(message, *args):
             role = client.guild.get_role(obj_id)
             user = client.guild.get_member(obj_id)
             if role == None and user == None:
-                raise Exception() # totally a hack lmao
-            await message.channel.set_permissions(role or user, read_messages=False, send_messages=False)
+                raise Exception()  # totally a hack lmao
+            await message.channel.set_permissions(
+                role or user, read_messages=False, send_messages=False
+            )
             successful_leaves.append(obj)
         except:
             await message.channel.send(
-                embed=utils.create_embed(
-                    f"Could not remove {obj} from channel."
-                )
+                embed=utils.create_embed(f"Could not remove {obj} from channel.")
             )
-    
+
     await message.channel.send(
-        embed=utils.create_embed(
-            f"Goodbye, {', '.join(successful_leaves)}. :pensive:"
-        )
+        embed=utils.create_embed(f"Goodbye, {', '.join(successful_leaves)}. :pensive:")
     )
 
 

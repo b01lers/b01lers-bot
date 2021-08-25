@@ -1,6 +1,5 @@
-from bot import client, DISCORD_TOKEN
 from bot import commands  # registers commands #
-from bot import backup
+from bot import DISCORD_TOKEN, backup, client
 
 backup.backup_db()
 client.run(DISCORD_TOKEN)

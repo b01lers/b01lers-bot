@@ -1,9 +1,9 @@
-import discord
-import time
 import json
+import time
 
-from bot import logging
-from bot import database, utils
+import discord
+
+from bot import database, logging, utils
 from bot.constants import *
 
 

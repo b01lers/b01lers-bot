@@ -1,10 +1,10 @@
-import discord
+import io
 import json
 import re
-import io
 
-from bot import client, logging
-from bot import utils, database, participation
+import discord
+
+from bot import client, database, logging, participation, utils
 from bot.constants import *
 
 

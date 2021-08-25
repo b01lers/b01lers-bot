@@ -1,7 +1,6 @@
 import discord
 
-from bot import client, logging
-from bot import participation, utils
+from bot import client, logging, participation, utils
 from bot.constants import *
 
 
