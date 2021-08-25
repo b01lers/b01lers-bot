@@ -233,11 +233,12 @@ class B01lersBotClient(discord.Client):
         )
 
         if current_rank_index > previous_rank_index:
-            await author.remove_roles(
-                discord.utils.get(
-                    self.guild.roles, name=ranks.RANK_NAMES[previous_rank_index]
+            if previous_rank_index != -1:
+                await author.remove_roles(
+                    discord.utils.get(
+                        self.guild.roles, name=ranks.RANK_NAMES[previous_rank_index]
+                    )
                 )
-            )
             await author.add_roles(
                 discord.utils.get(
                     self.guild.roles, name=ranks.RANK_NAMES[current_rank_index]
