@@ -24,7 +24,7 @@ async def server_rank(message, *args):
     for i, rank, cutoff in zip(
         range(RANK_COUNT),
         RANK_NAMES,
-        generate_ranks(database.get_highest_points(), RANK_COUNT),
+        generate_ranks(database.get_highest_points()[0], RANK_COUNT),
     ):
         embed.add_field(name=rank, value=f"Rank #{i} @ {cutoff} points.")
 
