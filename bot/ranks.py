@@ -20,7 +20,7 @@ RANK_NAMES = [
     "🖥️ Gibson Crasher",
     "🔥 Intrusion Creation System",
     "🍦 Zero Cool",
-    "🏳️‍🌈 1337",
+    "🌈 1337",
 ]
 RANK_COLORS = [
     0x7B334C,
