@@ -127,7 +127,7 @@ class B01lersBotClient(discord.Client):
                 )
         self.ranks = (
             *zip(
-                ranks.generate_ranks(database.get_highest_points(), ranks.RANK_COUNT),
+                ranks.generate_ranks(database.get_highest_points()[0], ranks.RANK_COUNT),
                 ranks.RANK_NAMES,
             ),
         )
@@ -229,7 +229,7 @@ class B01lersBotClient(discord.Client):
                 previous_rank_index = ranks.RANK_NAMES.index(role.name)
 
         current_rank_index = ranks.get_rank(
-            database.get_points(author.id)[0], list(map(lambda r: r[0], self.ranks))
+            database.get_points(author.id), list(map(lambda r: r[0], self.ranks))
         )
 
         if current_rank_index > previous_rank_index:
