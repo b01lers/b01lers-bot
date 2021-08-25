@@ -256,7 +256,7 @@ class B01lersBotClient(discord.Client):
                     f"{author.name} has reached rank {ranks.RANK_NAMES[current_rank_index]}!"
                 )
             else:
-                await self.bot_channel.send(
+                await self.update_channel.send(
                     f"{author.name} has reached rank {ranks.RANK_NAMES[current_rank_index]}!"
                 )
 
