@@ -4,6 +4,7 @@ import discord
 
 from bot import client, database, logging, participation, utils
 from bot.constants import *
+from bot.ranks import *
 
 
 @client.register("!rank", (0, 0))
