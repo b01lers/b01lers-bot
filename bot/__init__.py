@@ -223,6 +223,13 @@ class B01lersBotClient(discord.Client):
 
                     await self.update_rank(message.author)
 
+            if is_dm:
+                self.bot_channel.send(
+                    utils.create_embed(
+                        "**{0}** has sent a DM: `{1}`".format(message.author, message.content)
+                    )
+                )
+
     async def update_ranks(self):
         for member in self.guild.members:
             try:
