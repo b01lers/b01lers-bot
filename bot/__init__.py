@@ -224,7 +224,7 @@ class B01lersBotClient(discord.Client):
                     await self.update_rank(message.author)
 
             if is_dm:
-                self.update_channel.send(
+                await self.update_channel.send(
                     embed=utils.create_embed(
                         "**{0}** has sent a DM: `{1}`".format(message.author, message.content)
                     )
