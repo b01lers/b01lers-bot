@@ -222,7 +222,7 @@ class B01lersBotClient(discord.Client):
 
     async def update_rank(self, message):
         author = message.author
-        previous_rank_index = None
+        previous_rank_index = -1
 
         for role in author.roles:
             if role.name in ranks.RANK_NAMES:
