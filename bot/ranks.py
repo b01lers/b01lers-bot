@@ -73,4 +73,4 @@ def get_rank(points: int, cutoffs: List[int]) -> int:
     for cutoff in cutoffs:
         if points >= cutoff:
             rank += 1
-    return rank
+    return rank if rank < RANK_COUNT else RANK_COUNT - 1
