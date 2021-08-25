@@ -20,6 +20,9 @@ async def server_rank(message, *args):
 
     pts = database.get_points(uid)
     embed.add_field(name="Point Total", value=str(pts))
+    for i, rank, cutoff in zip(range(RANK_COUNT), RANK_NAMES, RANK_CUTOFFS):
+        embed.add_field(name=rank, value=f"[{i}]: {cutoff} points.")
+    
 
     # TODO: When roles and stuff are added, make sure to update this as well. #
 

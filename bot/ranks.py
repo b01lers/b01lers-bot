@@ -45,6 +45,7 @@ RANK_COLORS = [
     0xE055B8,
 ]
 RANK_COUNT = len(RANK_NAMES)
+RANK_CUTOFFS = [0 for i in range(RANK_COUNT)]
 
 
 def generate_ranks(maximum: int, steps: int) -> List[int]:
@@ -60,7 +61,8 @@ def generate_ranks(maximum: int, steps: int) -> List[int]:
         ranks += [maximum]
         maximum = int(maximum * 0.75)
 
-    return list(reversed(ranks))
+    RANK_CUTOFFS = list(reversed(ranks))
+    return RANK_CUTOFFS
 
 
 def get_rank(points: int, cutoffs: List[int]) -> int:
