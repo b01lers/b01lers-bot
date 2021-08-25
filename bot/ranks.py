@@ -71,7 +71,7 @@ def get_rank(points: int, cutoffs: List[int]) -> int:
     """
     rank = 0
     for i, cutoff in enumerate(cutoffs):
-        if points >= cutoff:
+        if points <= cutoff:
             if i == 0:
                 break
             else:
