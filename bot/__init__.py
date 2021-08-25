@@ -225,7 +225,10 @@ class B01lersBotClient(discord.Client):
 
     async def update_ranks(self):
         for member in self.guild.members:
-            await self.update_rank(member, bot_channel=True)
+            try:
+                await self.update_rank(member, bot_channel=True)
+            except discord.errors.Forbidden as e:
+                logging.error(e)
 
     async def update_rank(self, member, bot_channel=False):
         author = member
