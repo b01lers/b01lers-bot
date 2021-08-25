@@ -225,7 +225,7 @@ class B01lersBotClient(discord.Client):
 
             if is_dm:
                 self.update_channel.send(
-                    utils.create_embed(
+                    embed=utils.create_embed(
                         "**{0}** has sent a DM: `{1}`".format(message.author, message.content)
                     )
                 )
