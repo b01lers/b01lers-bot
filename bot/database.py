@@ -19,7 +19,6 @@ def initialize_db():
     c.execute(CREATE_POINTS_LOG_TABLE)
     c.execute(CREATE_COMMAND_APPROVALS_TABLE)
     c.execute(CREATE_LINKS_TABLE)
-    c.execute(CREATE_MEMBER_RANK_TABLE)
     conn.commit()
     return conn, c
 
