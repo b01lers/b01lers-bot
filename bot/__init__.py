@@ -128,7 +128,9 @@ class B01lersBotClient(discord.Client):
                 )
         self.ranks = (
             *zip(
-                ranks.generate_ranks(database.get_highest_points()[0], ranks.RANK_COUNT),
+                ranks.generate_ranks(
+                    database.get_highest_points()[0], ranks.RANK_COUNT
+                ),
                 ranks.RANK_NAMES,
             ),
         )
@@ -243,16 +245,12 @@ class B01lersBotClient(discord.Client):
                     self.guild.roles, name=ranks.RANK_NAMES[previous_rank_index]
                 )
                 if prev_roles is not None:
-                    await author.remove_roles(
-                        prev_roles
-                    )
+                    await author.remove_roles(prev_roles)
             current_rank_role = discord.utils.get(
                 self.guild.roles, name=ranks.RANK_NAMES[current_rank_index]
             )
             if current_rank_role is not None:
-                await author.add_roles(
-                    current_rank_role
-                )
+                await author.add_roles(current_rank_role)
             if not bot_channel:
                 await self.general_channel.send(
                     f"{author.name} has reached rank {ranks.RANK_NAMES[current_rank_index]}!"
