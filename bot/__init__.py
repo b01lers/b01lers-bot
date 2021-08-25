@@ -234,16 +234,20 @@ class B01lersBotClient(discord.Client):
 
         if current_rank_index > previous_rank_index:
             if previous_rank_index != -1:
-                await author.remove_roles(
-                    discord.utils.get(
-                        self.guild.roles, name=ranks.RANK_NAMES[previous_rank_index]
+                prev_roles = discord.utils.get(
+                    self.guild.roles, name=ranks.RANK_NAMES[previous_rank_index]
+                )
+                if prev_roles is not None:
+                    await author.remove_roles(
+                        prev_roles
                     )
-                )
-            await author.add_roles(
-                discord.utils.get(
-                    self.guild.roles, name=ranks.RANK_NAMES[current_rank_index]
-                )
+            current_rank_role = discord.utils.get(
+                self.guild.roles, name=ranks.RANK_NAMES[current_rank_index]
             )
+            if current_rank_role is not None:
+                await author.add_roles(
+                    current_rank_role
+                )
             await self.general_channel.send(
                 f"{message.author.name} has reached rank {ranks.RANK_NAMES[current_rank_index]}!"
             )

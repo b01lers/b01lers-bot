@@ -70,7 +70,14 @@ def get_rank(points: int, cutoffs: List[int]) -> int:
     :param cutoffs: The list of cutoffs
     """
     rank = 0
-    for cutoff in cutoffs:
+    for i, cutoff in enumerate(cutoffs):
         if points >= cutoff:
-            rank += 1
-    return rank if rank < RANK_COUNT else RANK_COUNT - 1
+            if i == 0:
+                break
+            else:
+                rank = i - 1
+                break
+    else:
+        rank = RANK_COUNT - 1
+
+    return rank
