@@ -224,6 +224,15 @@ class B01lersBotClient(discord.Client):
                     if isinstance(message.author, discord.Member):
                         await self.update_rank(message.author)
 
+            if is_dm:
+                await self.update_channel.send(
+                    embed=utils.create_embed(
+                        "**{0}** has sent a DM: `{1}`".format(
+                            message.author, message.content
+                        )
+                    )
+                )
+
     async def update_ranks(self):
         for member in self.guild.members:
             try:
@@ -255,7 +264,7 @@ class B01lersBotClient(discord.Client):
             )
             if current_rank_role is not None:
                 await author.add_roles(current_rank_role)
-            if not bot_channel:
+            if not bot_channel and not current_rank_index == 0:
                 await self.general_channel.send(
                     f"{author.name} has reached rank {ranks.RANK_NAMES[current_rank_index]}!"
                 )
