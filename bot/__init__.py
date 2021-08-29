@@ -221,7 +221,8 @@ class B01lersBotClient(discord.Client):
                     if links:
                         database.insert_links(message.channel.id, links)
 
-                    await self.update_rank(message.author)
+                    if isinstance(message.author, discord.Member):
+                        await self.update_rank(message.author)
 
     async def update_ranks(self):
         for member in self.guild.members:
