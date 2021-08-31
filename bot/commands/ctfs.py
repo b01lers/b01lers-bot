@@ -94,50 +94,53 @@ async def make_chal_channel(message, *args):
 @client.register("!archive", (0, 0), {"dm": False, "officer": True})
 async def archive_competition(message, *args):
     """!archive
-    Archives the current competition channel from the Live CTFs category.
+    Archives the current competition channel from the Live CTFs category, as well as challenge channels if they exist.
     If used in a challenge-specific channel, deletes the channel and sends a log of the chat to the main competition channel."""
 
     if message.channel.category_id == client.ctfs.id:
+        for category, chal_channels in client.guild.by_category():
+            if message.channel.name.lower() + " challenges" == category.name.lower():
+                for channel in chal_channels:
+                    await archive_channel(channel, message.channel)
+                break
+
         await message.channel.edit(category=client.archive)
         await message.channel.edit(position=0)
     elif message.channel.category.name.endswith(" challenges"):
-        ctf = message.channel.category.name[: -len(" challenges")].replace(" ", "-")
+        ctf = message.channel.category.name[:-len(" challenges")].replace(" ", "-")
         for chan in client.ctfs.text_channels:
             if chan.name.lower() == ctf.lower():
-                fname = f"{ctf}_{message.channel.name}_log.txt"
-                f = open(fname, "w")
-                async for m in message.channel.history(limit=10000, oldest_first=True):
-                    f.write(
-                        f"[{m.created_at.replace().strftime('%Y-%m-%d %I:%M %p')} UTC] {m.author.display_name}: {m.content}\n{' '.join(map(lambda x: x.url, m.attachments))}\n"
-                    )
-                f.close()
-
-                f = open(fname, "rb")
-                await chan.send(
-                    embed=utils.create_embed(
-                        f"Discussion for the challenge {message.channel.name} has been archived. A text log of the conversation is attached."
-                    ),
-                    file=discord.File(f),
-                )
-                f.close()
-
-                os.remove(fname)
-
-                cat = message.channel.category
-                await message.channel.delete()
-                if len(cat.text_channels) == 0:
-                    await cat.delete()
-
+                await archive_channel(message.channel, chan)
                 return
-
+        
         await message.channel.send(
-            embed=utils.create_embed(
-                f"Could not find live CTF channel {ctf}. Was it accidentally moved?"
-            )
+            embed=utils.create_embed(f"Could not find live CTF channel {ctf}. Was it accidentally moved?")
         )
         return
 
     return
+
+
+async def archive_channel(channel, ctf_channel):
+    fname = f"{ctf_channel.name}_{channel.name}_log.txt"
+    f = open(fname, "w")
+    async for m in channel.history(limit=10000, oldest_first=True):
+        f.write(f"[{m.created_at.replace().strftime('%Y-%m-%d %I:%M %p')} UTC] {m.author.display_name}: {m.content}\n{' '.join(map(lambda x: x.url, m.attachments))}\n")
+    f.close()
+
+    f = open(fname, "rb")
+    await ctf_channel.send(
+        embed = utils.create_embed(f"Discussion for the challenge {channel.name} has been archived. A text log of the conversation is attached."),
+        file = discord.File(f)
+    )
+    f.close()
+
+    os.remove(fname)
+
+    cat = channel.category
+    await channel.delete()
+    if len(cat.text_channels) == 0:
+        await cat.delete()
 
 
 @client.register("!invite", (1, 4), {"dm": False, "officer": True})
