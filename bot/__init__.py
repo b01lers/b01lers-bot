@@ -211,7 +211,7 @@ class B01lersBotClient(discord.Client):
                                 embed=utils.create_embed(str(err))
                             )
             else:
-                if is_channel and message.channel.category_id == LIVE_CTF_CATEGORY:
+                if is_channel and (message.channel.category_id == LIVE_CTF_CATEGORY or "challenges" in lower(message.channel.category.name)):
                     participation.give_ctf_message_points(message)
                 elif not is_dm:
                     participation.give_message_points(message)
