@@ -334,8 +334,7 @@ class B01lersBotClient(discord.Client):
         # TODO: voice points vs. CTF voice points
         for channel in self.guild.voice_channels:
             for member in channel.members:
-                #If channel is under a live_ctf_category
-                if len(channel.members) >= 2 or channel.category_id == LIVE_CTF_CATEGORY:
+                if len(channel.members) >= 2 or channel.category_id == LIVE_CTF_CATEGORY or "challenges" in lower(channel.category.name):
                     participation.give_voice_points(member)
 
 
