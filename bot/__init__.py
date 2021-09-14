@@ -213,7 +213,7 @@ class B01lersBotClient(discord.Client):
             else:
                 if is_channel and message.channel.category_id == LIVE_CTF_CATEGORY:
                     participation.give_ctf_message_points(message)
-                else:
+                elif not is_dm:
                     participation.give_message_points(message)
 
                 if is_channel:
