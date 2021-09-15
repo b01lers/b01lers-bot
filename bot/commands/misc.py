@@ -34,6 +34,8 @@ async def restore_mail(self, message):
 
 @client.register("!dm", (2, 2), {"dm": True, "officer": True})
 async def do_dm(message, *args):
+    """!dm
+    Direct messages a member."""
     uid, rest = args[0], args[1:]
     try:
         uid = int(utils.parse_uid(uid))
