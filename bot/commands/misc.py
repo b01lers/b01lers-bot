@@ -34,7 +34,7 @@ async def restore_mail(self, message):
 
 @client.register("!dm", (2, 2), {"dm": True, "officer": True})
 async def do_dm(message, *args):
-    """!dm
+    """!dm <@user> "<message>"
     Direct messages a member."""
     uid, rest = args[0], args[1:]
     try:
@@ -57,6 +57,7 @@ async def do_dm(message, *args):
     try:
         msg = " ".join(rest)
         await user.send(msg)
+        await message.add_reaction(DONE_EMOJI)
     except:
         await message.author.send(
             embed=utils.create_embed(
