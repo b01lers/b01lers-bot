@@ -31,3 +31,33 @@ async def restore_mail(self, message):
     embed.add_field(name="Contents", value=message.content[8:])
     await client.update_channel.send(embed=embed)
     return
+
+@client.register("!dm", (2, 2), {"dm": True, "officer": True})
+async def do_dm(message, *args):
+    uid, rest = args[0], args[1:]
+    try:
+        uid = int(utils.parse_uid(uid))
+    except:
+        await message.author.send(
+            embed=utils.create_embed(
+                "That user does not exist."
+            )
+        )
+
+    user = await client.get_member(uid)
+    if user is None:
+        await message.author.send(
+            embed=utils.create_embed(
+                "That user does not exist."
+            )
+        )
+
+    try:
+        msg = " ".join(rest)
+        await user.send(msg)
+    except:
+        await message.author.send(
+            embed=utils.create_embed(
+                "Couldn't send message to user."
+            )
+        )
