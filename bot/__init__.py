@@ -211,7 +211,7 @@ class B01lersBotClient(discord.Client):
                                 embed=utils.create_embed(str(err))
                             )
             else:
-                if is_channel and (message.channel.category_id == LIVE_CTF_CATEGORY or "challenges" in lower(message.channel.category.name)):
+                if is_channel and (message.channel.category_id == LIVE_CTF_CATEGORY or "challenges" in message.channel.category.name.lower()):
                     participation.give_ctf_message_points(message)
                 elif not is_dm:
                     participation.give_message_points(message)
@@ -334,7 +334,7 @@ class B01lersBotClient(discord.Client):
         # TODO: voice points vs. CTF voice points
         for channel in self.guild.voice_channels:
             for member in channel.members:
-                if len(channel.members) >= 2 or channel.category_id == LIVE_CTF_CATEGORY or "challenges" in lower(channel.category.name):
+                if len(channel.members) >= 2 or channel.category_id == LIVE_CTF_CATEGORY or "challenges" in channel.category.name.lower():
                     participation.give_voice_points(member)
 
 
