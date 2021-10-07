@@ -65,7 +65,7 @@ async def do_dm(message, *args):
             )
         )
 
-@client.register("!echo", (1, 5000))
+@client.register("!echo", (0, 5000))
 async def do_echo(message, *args):
     """!echo <message>
     Does what you think it does."""
