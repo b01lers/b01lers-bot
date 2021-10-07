@@ -65,11 +65,11 @@ async def do_dm(message, *args):
             )
         )
 
-@client.register("!dm", (1, 5000))
-async def do_dm(message, *args):
+@client.register("!echo", (1, 5000))
+async def do_echo(message, *args):
     """!echo <message>
     Does what you think it does."""
-    data = message.content[len("!dm"):]
+    data = message.content[len("!echo"):]
     if data.strip() == "":
         await message.channel.send(
             embed=utils.create_embed(
