@@ -64,3 +64,18 @@ async def do_dm(message, *args):
                 "Couldn't send message to user."
             )
         )
+
+@client.register("!dm", (1, 5000))
+async def do_dm(message, *args):
+    """!echo <message>
+    Does what you think it does."""
+    data = message.content[len("!dm"):]
+    if data.strip() == "":
+        await message.channel.send(
+            embed=utils.create_embed(
+                "Echo!"
+            )
+        )
+    else:
+        await message.channel.send(data)
+    await message.delete()
