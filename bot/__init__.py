@@ -266,11 +266,11 @@ class B01lersBotClient(discord.Client):
                 await author.add_roles(current_rank_role)
             if not bot_channel and not current_rank_index == 0:
                 await self.general_channel.send(
-                    f"{author.name} has reached rank {ranks.RANK_NAMES[current_rank_index]}!"
+                    utils.create_embed(f"{author.name} has reached rank {ranks.RANK_NAMES[current_rank_index]}!")
                 )
             else:
                 await self.update_channel.send(
-                    f"{author.name} has reached rank {ranks.RANK_NAMES[current_rank_index]}!"
+                    utils.create_embed(f"{author.name} has reached rank {ranks.RANK_NAMES[current_rank_index]}!")
                 )
 
             await author.send(
