@@ -236,7 +236,7 @@ class B01lersBotClient(discord.Client):
         # filter social invites from unverified members
         if len(message.author.roles) == 0:
             for link in [x[0] for x in re.findall(URL_REGEX, message.content)] 
-                if any(domain in link.lower() for domain in BLOCKED_DOMAINS:
+                if any(domain in link.lower() for domain in BLOCKED_DOMAINS):
                     await message.delete()
                     await message.author.ban()
                     break
