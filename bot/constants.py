@@ -38,6 +38,7 @@ ERROR_COLOR = 0x203354
 SECONDS_PER_DAY = 86400
 CTF_CHAL_CATEGORIES = ("re", "pwn", "web", "crypto", "forensics", "other")
 APPROVAL_VALUES = ("PENDING", "ACCEPTED", "REJECTED")
+BLOCKED_DOMAINS = ['discord', 'groupme']
 
 ### REGEXES ###
 HASH_REGEX = "[a-f0-9]{64}"

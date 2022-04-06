@@ -233,6 +233,15 @@ class B01lersBotClient(discord.Client):
                     )
                 )
 
+        # filter social invites from unverified members
+        if len(message.author.roles) < 2:
+            for link in links: 
+                if any(domain in link.lower() for domain in BLOCKED_DOMAINS):
+                    await message.delete()
+                    await message.author.kick()
+                    await self.update_channel.send(embed=utils.create_embed(f'Kicked {message.author.name} for assumed bot behavior.'))
+                    break
+
     async def update_ranks(self):
         for member in self.guild.members:
             try:
