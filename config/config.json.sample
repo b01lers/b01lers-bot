@@ -1,0 +1,39 @@
+{
+    "security": {
+        "discord-token": "",
+        "github-token": "",
+        "secret": "",
+        "secret-pub": ""
+    },
+    "mail": {
+        "email": "",
+        "name": "",
+        "subject": "B01lers - Discord Account Verification",
+        "template": [
+            "Dear {0},",
+            "",
+            "Welcome to b01lers! Please copy and paste the following command into your DM with b01lers-bot to verify yourself:",
+            "<b>!validate {1}</b>",
+            "",
+            "Sincerely, ",
+            "B01lers Automated Email Bot"
+        ]
+    },
+    "mailgun": {
+        "key": "",
+        "url": ""
+    },
+    "discord": {
+        # Don't wrap IDs in quotes, as Discord.py only accept numbers instead of strings for get_channel().
+        "guild": "##################",
+        "update-channel": "##################",
+        "approval-channel": "##################",
+        "ctf-category": "##################",
+        "archive-category": "##################",
+        "general-channel": "##################"
+    },
+    "files": {
+        "database-path": "/xxxx/xxxx/b01lers-bot.db",
+        "backup-path": "/xxxx/xxxx/b01lers-bot-{0}.db"
+    }
+}

@@ -1,5 +1,13 @@
-discord.py
+py-cord # Currently doesn't support voice due to PyNaCl incompatibility
 email_validator
 beautifulsoup4
 requests
-PyGithub
+loguru
+peewee
+aiohttp
+# pyGitHub was removed due to incompatibility with pynacl
+# py-cord[speed]'s json speedup is not supported due to orjson
+# So we manually install these packages for other general speedup
+aiodns
+brotlipy
+cchardet

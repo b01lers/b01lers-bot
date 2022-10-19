@@ -1,7 +1,7 @@
 import logging
+import sys
 
-from bot.helpers import participation
-from bot.constants import *
+from loguru import logger
 
 
 class InterceptHandler(logging.Handler):
@@ -21,31 +21,3 @@ class InterceptHandler(logging.Handler):
         logger.opt(depth=depth, exception=record.exc_info).log(
             level, record.getMessage()
         )
-
-
-# Setup logging
-import logging
-
-discord_logger = logging.getLogger()
-discord_logger.setLevel(logging.DEBUG)
-discord_logger.addHandler(InterceptHandler())
-
-from loguru import logger
-
-logger.add(
-    "logs/bot-{time}.log", format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}"
-)
-
-# Bootstrap
-from bot.bot import client
-
-# Load up listeners
-from bot.listeners import *
-
-# Load up commands
-from bot.commands import *
-
-# Load up scheduled tasks
-from bot.tasks import *
-
-logging.info("Initialization completed.")

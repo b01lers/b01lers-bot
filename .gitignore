@@ -1,6 +1,10 @@
 *.pyc
 .vscode/
-data/
-!data/README.md
+config/config.json
+config/config.secret
+data/b01lers-bot.db
+data/b01lers-bot-*.db
+logs/bot-*.log
+logs/bot.log
 venv/
 tags

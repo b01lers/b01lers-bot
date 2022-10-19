@@ -1,5 +1,4 @@
-from bot import commands  # registers commands #
-from bot import DISCORD_TOKEN, backup, client
+from bot import DISCORD_TOKEN, client
 
-backup.backup_db()
-client.run(DISCORD_TOKEN)
+if __name__ == "__main__":
+    client.run(DISCORD_TOKEN)
