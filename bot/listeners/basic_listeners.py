@@ -8,6 +8,7 @@ import traceback
 import discord
 from discord import RawReactionActionEvent, Message
 from discord.ext import commands
+from discord.ext.commands import MissingRequiredArgument
 
 from bot import client, constants, LIVE_CTF_CATEGORY, URL_REGEX
 from bot.database.links import batch_insert_links
@@ -115,11 +116,11 @@ async def on_raw_reaction_add(payload: RawReactionActionEvent):
     if uid != client.user.id:
         is_officer = await client.is_officer_id(uid)
         if (
-            cid == constants.APPROVAL_CHANNEL
-            and is_officer
-            and msg.author.id == client.user.id
-            and len(msg.embeds) == 1
-            and msg.embeds[0].footer.text == "APPROVAL NEEDED"
+                cid == constants.APPROVAL_CHANNEL
+                and is_officer
+                and msg.author.id == client.user.id
+                and len(msg.embeds) == 1
+                and msg.embeds[0].footer.text == "APPROVAL NEEDED"
         ):
             if emoji == constants.DONE_EMOJI:
                 await client.commands["!accept"].func(msg)
@@ -171,8 +172,20 @@ async def on_message(message: Message) -> None:
 
 @client.event
 async def on_command_error(ctx: commands.Context, error: commands.CommandError) -> None:
-    logging.debug(error)
-    await ctx.reply(error)
+    if isinstance(error, MissingRequiredArgument):
+        embed = create_embed(
+            "You have an error in your command, you can use `!help [command]` to check its syntax.",
+            title="Error")
+        await ctx.reply(
+            embed=embed
+        )
+    else:
+        embed = create_embed(
+            "An error occurred while processing your command. This incident has been logged.",
+            title="Error")
+        await ctx.reply(
+            embed=embed
+        )
 
 
 @client.event
