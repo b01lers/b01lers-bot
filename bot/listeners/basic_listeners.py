@@ -8,7 +8,7 @@ import traceback
 import discord
 from discord import RawReactionActionEvent, Message
 from discord.ext import commands
-from discord.ext.commands import MissingRequiredArgument
+from discord.ext.commands import MissingRequiredArgument, CommandNotFound, MissingRole
 
 from bot import client, constants, LIVE_CTF_CATEGORY, URL_REGEX
 from bot.database.links import batch_insert_links
@@ -31,8 +31,8 @@ async def on_ready() -> None:
 
     # TODO: Implement
     # self.give_voice_points.start()
-    # await self.ensure_ranks()
-    # await self.update_ranks()
+    await client.ensure_ranks()
+    await client.update_ranks()
 
     logging.info("B01lers bot is now at your service.")
 
@@ -179,6 +179,8 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
         await ctx.reply(
             embed=embed
         )
+    elif isinstance(error, CommandNotFound) or isinstance(error, MissingRole):
+        return
     else:
         embed = create_embed(
             "An error occurred while processing your command. This incident has been logged.",
