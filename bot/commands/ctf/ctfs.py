@@ -1,3 +1,4 @@
+import datetime
 import os
 from typing import Union
 
@@ -17,7 +18,7 @@ from bot.database.bootcamp import (
 from bot.database.members import get_member_by_discord
 from bot.helpers import decorators
 from bot.helpers.chat_log_helper import archive_and_gzip_chat_log
-from bot.utils.messages import create_embed
+from bot.utils.messages import create_embed, get_epoch_timestamp
 
 MemberOrRole = Union[discord.Member, discord.Role]
 
@@ -383,6 +384,41 @@ async def unregister(ctx: commands.Context):
 
         await ctx.reply()
 
+
+@commands.dm_only()
+@client.slash_command(
+    name="survey",
+    description="Take a survey about our bootcamp ctf."
+)
+async def survey(ctx: discord.ApplicationContext):
+    class SurveyModal(discord.ui.Modal):
+        def __init__(self, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.add_item(
+                discord.ui.InputText(
+                    label="What do you think of this bootcamp?",
+                    style=discord.InputTextStyle.long
+                )
+            )
+            self.add_item(
+                discord.ui.InputText(
+                    label="Any suggestions for future bootcamps?",
+                    style=discord.InputTextStyle.long
+                )
+            )
+
+        async def callback(self, interaction: discord.Interaction):
+            embed = discord.Embed(title="New Survey Feedback")
+            embed.add_field(name="Feedback", value=self.children[0].value)
+            embed.add_field(name="Future suggestions", value=self.children[1].value)
+            embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
+            embed.timestamp = datetime.datetime.now()
+            await client.update_channel.send(embeds=[embed])
+            await interaction.response.send_message(
+                "Thank you for taking the survey! Your submission has been recorded."
+            )
+    # TODO: Do necessary checks here
+    await ctx.send_modal(SurveyModal(title="Bootcamp CTF Survey"))
 
 # @client.register("!registrations", (0, 0), {"channel": False, "officer": True})
 @decorators.officer_only()

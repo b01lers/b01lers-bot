@@ -10,19 +10,17 @@ from bot.rank_constants import *
 
 
 # @client.register("!rank", (0, 0))
-@client.command(
+@client.slash_command(
     name="rank",
-    brief="Displays how many points you have in ths server.",
-    description="Displays how many points you have in ths server.",
-    extras={"tags": ["fun"]},
+    description="Displays how many points you have in ths server."
 )
-async def server_rank(ctx: commands.Context):
+async def server_rank(ctx: discord.ApplicationContext):
     """!rank
     Displays how many points you have in ths server."""
 
     top_points = get_highest_points()
     if top_points is None:
-        await ctx.reply("No data... for now!")
+        await ctx.respond("No data... just for now!")
         return
 
     uid = ctx.author.id
@@ -44,9 +42,7 @@ async def server_rank(ctx: commands.Context):
 
     # TODO: When roles and stuff are added, make sure to update this as well. #
 
-    await ctx.channel.send(embed=embed)
-
-    return
+    await ctx.respond(embed=embed)
 
 
 # @client.register("!stats", (0, 0))

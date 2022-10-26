@@ -1,23 +1,23 @@
+import discord
 from discord.ext import commands
 
 from bot import client
 
 
 # @client.register("!welcome", (0, 0), {"dm": False})
-@commands.guild_only()
-@client.command(
+@discord.guild_only()
+@client.slash_command(
     name="welcome",
-    brief="Send the welcome message.",
-    description="Send the welcome message.",
-    extras={"tags": ["general"]},
+    description="Display the welcome message."
 )
-async def do_welcome(ctx: commands.Context):
+async def do_welcome(ctx: discord.ApplicationContext):
     """!welcome
     Send the welcome message"""
 
-    await ctx.channel.send(
-        """The welcome message:
-
+    # TODO: Make this configurable
+    await ctx.respond(
+        """Welcome to B01lers!
+    
 The best way to get started is to come every weekend, play, and ask questions along the way to see what skills you
 need as you play. If you don't know something, learn it while you work or take the next week to learn if you can't
 figure it out!
@@ -38,4 +38,3 @@ Picoctf is an easier competition with many categories that is always on and gene
 Overthewire bandit is a great intro to bash and thinking like a ctfer: https://overthewire.org/wargames/bandit/ once
 it starts getting really weird it becomes less useful though. """
     )
-    await ctx.message.delete()

@@ -1,20 +1,22 @@
 import discord
-from discord.ext import commands
+from discord import Option
 
-from bot import client, logging, utils
+from bot import client
 from bot.constants import *
 
 
 # @client.register("!bookmark", (4, 4), {"dm": False})
-@commands.guild_only()
-@client.command(
+@discord.guild_only()
+@client.slash_command(
     name="bookmark",
-    brief="Make a bookmark!",
     description="Creates a fancy-formatted bookmark in the current channel.",
-    extras={"tags": ["general"]},
 )
-async def do_bookmark(
-    ctx: commands.Context, title: str, link: str, description: str, usage: str
+async def bookmark(
+        ctx: discord.ApplicationContext,
+        title: Option(str, "Bookmark title"),
+        link: Option(str, "Bookmark link"),
+        description: Option(str, "Bookmark description"),
+        usage: Option(str, "Bookmark permissions/usage")
 ):
     """
     !bookmark "bookmark name" "bookmark link" "bookmark description" "Permissions/Usage"
@@ -24,6 +26,4 @@ async def do_bookmark(
     embed.add_field(name="Bookmark Link", value=link)
     embed.add_field(name="Bookmark Description", value=description)
     embed.add_field(name="Permissions/Usage", value=usage)
-    channel = ctx.channel
-    await ctx.message.delete()
-    await channel.send(embed=embed)
+    await ctx.respond(embed=embed)

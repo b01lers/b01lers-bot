@@ -1,5 +1,5 @@
 import discord
-from discord import Member
+from discord import Member, Option
 from discord.ext import commands
 
 from bot import client, logging
@@ -16,42 +16,49 @@ from bot.utils.messages import create_embed
 
 
 # @client.register("!solve", (3, 7), {"dm": False})
-@commands.guild_only()
-@client.command(
+@discord.guild_only()
+@client.slash_command(
     name="solve",
-    brief="Submit a flag to specific challenge.",
-    description="Submits a solved challenge with up to 4 collaborators.",
-    extras={"tags": ["ctf"]},
+    description="Submit a flag to specific challenge."
 )
 async def submit_solve(
-    ctx: commands.Context,
-    chal: str,
-    category: str,
-    flag: str,
-    tm1: Member = None,
-    tm2: Member = None,
-    tm3: Member = None,
-    tm4: Member = None,
+    ctx: discord.ApplicationContext,
+    challenge: Option(str, "Challenge name"),
+    category: Option(str, "Challenge category"),
+    flag: Option(str, "Challenge flag"),
+    tm1: Option(Member, "Teammate 1", required=False, default=None),
+    tm2: Option(Member, "Teammate 2", required=False, default=None),
+    tm3: Option(Member, "Teammate 3", required=False, default=None),
+    tm4: Option(Member, "Teammate 4", required=False, default=None)
 ):
     """!solve "<chal name>" <category> "<flag>" [@teammate 1]... [@teammate 4]
     Submits a solved challenge with up to 4 collaborators.
     `<category>` should be one of `re`, `pwn`, `web`, `crypto`, `other`.
     Gives 100 participation points to each collaborator upon officer approval."""
 
+    # Preliminary checks
     if ctx.channel.category_id != LIVE_CTF_CATEGORY:
-        await ctx.channel.send(
-            embed=create_embed("Please submit your solve in a live CTF channel.")
+        await ctx.respond(
+            embed=create_embed("Please submit your solve in a live CTF channel."), ephemeral=True
+        )
+        return
+
+    if category not in CTF_CHAL_CATEGORIES:
+        await ctx.respond(
+            embed=create_embed(
+                f"Make sure `<category>` is one of {', '.join(map(lambda x: f'`{x}`', CTF_CHAL_CATEGORIES))}!"
+            ), ephemeral=True
         )
         return
 
     teammates = list(filter(lambda item: item is not None, [tm1, tm2, tm3, tm4]))
-    chal = chal.lower()
+    challenge = challenge.lower()
     category = category.lower()
 
     teammates.insert(0, await client.get_member(ctx.message.id))
 
     data = {
-        "chal": chal,
+        "chal": challenge,
         "category": category,
         "flag": flag,
         "teammates": teammates,
@@ -59,18 +66,10 @@ async def submit_solve(
         "mid": ctx.message.id,
     }
 
-    if category not in CTF_CHAL_CATEGORIES:
-        await ctx.channel.send(
-            embed=create_embed(
-                f"Make sure `<category>` is one of {', '.join(map(lambda x: f'`{x}`', CTF_CHAL_CATEGORIES))}!"
-            )
-        )
-        return
-
     aid = create_approval_and_return_id(json.dumps(data))
     msg = await client.approval_channel.send(
         embed=create_embed(
-            f"""A new solve for {chal} in {ctx.channel.mention} is pending approval!
+            f"""A new solve for {challenge} in {ctx.channel.mention} is pending approval!
         Use `!review {aid}` to see the details of this solve, or click [here](https://discordapp.com/channels/{GUILD}/{data['cid']}/{data['mid']}) for the message.
 
         React with {DONE_EMOJI} to acccept this solve, or {CANCEL_EMOJI} to reject.""",
@@ -82,10 +81,8 @@ async def submit_solve(
     await msg.add_reaction(CANCEL_EMOJI)
     await ctx.message.add_reaction(WAITING_EMOJI)
 
-    await ctx.reply(
-        embed=create_embed(
-            f"Your solve for {chal} has been recorded with request ID {aid}."
-        )
+    await ctx.respond(
+        f"Your solve for {challenge} has been recorded with request ID {aid}."
     )
 
     logging.info(f"Solve {aid} solve awaiting approval.")

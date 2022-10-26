@@ -1,5 +1,6 @@
 import discord
 import email_validator
+from discord import Option
 from discord.ext import commands
 
 from bot import client, logging
@@ -18,36 +19,37 @@ from bot.utils.validation import (
 
 
 # @client.register("!verify", (1, 1), {"channel": False})
-@commands.dm_only()
-@client.command(
+@client.slash_command(
     name="verify",
-    brief="Verify yourself as a Purdue student.",
-    description="Sends user a verification email to verify them as a Purdue student.",
-    extras={"tags": ["general"]},
+    description="Verify yourself as a certified Purdue student.",
 )
-async def verify_email(ctx: commands.Context, email: str):
+async def verify_email(ctx: discord.ApplicationContext, email: Option(str, "Your Purdue Email")):
     """!verify <youremail@purdue.edu>
     Sends user a verification email to verify them as a Purdue student."""
 
     discord_user = get_member_by_discord(ctx.author.id)
     if discord_user and discord_user.email:
-        await ctx.reply("You have already verified!")
+        if discord_user.validated == 1:
+            await ctx.respond("You have already verified!", ephemeral=True)
+        else:
+            await ctx.respond("You have already received a token, please check your spam and use `/validate <token>`!",
+                              ephemeral=True)
         return
 
     # Validate if it is a valid email address
     try:
         validated_email = email_validator.validate_email(email)
     except email_validator.EmailNotValidError as e:
-        await ctx.reply(embed=create_embed("**INVALID EMAIL**: {0}".format(str(e))))
+        await ctx.respond(embed=create_embed("**INVALID EMAIL**: {0}".format(str(e))), ephemeral=True)
         return
 
     # Check if it is a Purdue email
     # TODO: Make this configurable since we are open sourced
     if validated_email.domain != "purdue.edu":
-        await ctx.reply(
+        await ctx.respond(
             embed=create_embed(
                 "**INVALID EMAIL**: The email must be a purdue.edu email address."
-            )
+            ), ephemeral=True
         )
         return
 
@@ -56,25 +58,17 @@ async def verify_email(ctx: commands.Context, email: str):
 
     # When they started validation
     if member:
-        # If already validated
-        if member.validated == 1:
-            await ctx.reply(
-                embed=create_embed(
-                    "This email is already verified. If you believe that this is an error, please contact an officer."
-                )
-            )
-        else:
-            await ctx.reply(
-                embed=create_embed(
-                    "You have already received a token, please check your spam and use `!validate <token>`!"
-                )
-            )
+        await ctx.respond(
+            "This email is already verified. If you believe that this is an error, please contact an officer.",
+            ephemeral=True
+        )
         # Escape this tab hell
         return
 
     # Start verification process
-    notification_message = await ctx.reply(
-        embed=create_embed("Sending verification email to {0}...".format(email))
+    interaction = await ctx.respond(
+        "Sending verification email to {0}...".format(email),
+        ephemeral=True
     )
 
     # Lookup student from Purdue directory
@@ -82,7 +76,7 @@ async def verify_email(ctx: commands.Context, email: str):
 
     # If student does not exist
     if error:
-        await ctx.reply(embed=create_embed(error))
+        await ctx.respond(embed=create_embed(error), ephemeral=True)
         await client.update_channel.send(embed=create_embed(error))
         return
 
@@ -95,55 +89,61 @@ async def verify_email(ctx: commands.Context, email: str):
     )
 
     if not send_result:
-        await notification_message.edit(
+        await interaction.followup.send(
             embed=create_embed(
                 "There was an error sending email! Please try again or notify an officer."
-            )
+            ),
+            ephemeral=True
         )
         return
 
-    await notification_message.edit(
-        embed=create_embed("Done! Please check your inbox.")
+    await interaction.followup.send(
+        "Done! Please check your inbox.",
+        ephemeral=True
     )
 
     members.add_member(student_name, ctx.author.id, email, token, False)
-    logging.debug(f"Verified student {student_name}")
+    logging.debug(f"Added student {student_name} to validation database.")
 
 
 # @client.register("!validate", (1, 1), {"channel": False})
-@commands.dm_only()
-@client.command(
+@client.slash_command(
     name="validate",
-    brief="Validate yourself as a Purdue student.",
-    description="Completes verification of a user as a Purdue student.",
-    extras={"tags": ["general"]},
+    description="Submit your token to complete the verification of you being a Purdue student."
 )
-async def validate_email(ctx: commands.Context, vhash: str):
+async def validate_email(ctx: discord.ApplicationContext,
+                         token: Option(str, "Token you received in the verification email")):
     """!validate <token>
     Completes verification of a user as a Purdue student.
     <token> is sent to the user through email upon running `!verify`."""
 
     member = members.get_member_by_discord(ctx.author.id)
     if member is None:
-        await ctx.reply(
-            embed=create_embed(
-                "It seems that you haven't started the verification process yet. You can type `!verify <your_purdue_email>` to start it."
-            )
+        await ctx.respond(
+            "It seems that you haven't started the verification process yet. You can use `/verify <your_purdue_email>` to start it.",
+            ephemeral=True
         )
+        return
 
     # If they are already validated
     if member.validated:
-        await ctx.author.send(embed=create_embed("You are already verified!"))
+        await ctx.respond(
+            embed=create_embed(
+                "You are already verified!"
+            ),
+            ephemeral=True
+        )
         # discord_user = await client.get_member(ctx.author.id)
         # await discord_user.add_roles(discord.utils.get(client.guild.roles, name="members"))
         return
 
     # If not, check if hash matches
-    if not compare_digest(member.token, vhash):
-        await ctx.author.send(
+    if not compare_digest(member.token, token):
+        await ctx.respond(
             embed=create_embed(
                 "Incorrect token, please make sure you entered correct token or try again."
-            )
+            ),
+            ephemeral=True
         )
         return
 
@@ -153,10 +153,9 @@ async def validate_email(ctx: commands.Context, vhash: str):
     await discord_member.add_roles(
         discord.utils.get(client.guild.roles, name="members")
     )
-    await ctx.reply(
-        embed=create_embed(
-            "You are now verified. Join our discussion with a member role now!"
-        )
+    await ctx.respond(
+        "You are now verified. Join our discussion with a member role now!",
+        ephemeral=True
     )
     await client.update_channel.send(
         embed=create_embed("Validated user {0}".format(ctx.author.mention))
@@ -165,39 +164,35 @@ async def validate_email(ctx: commands.Context, vhash: str):
 
 
 # @client.register("!member", (1, 1), {"dm": False, "officer": True})
-@commands.guild_only()
 @commands.has_role("officer")
-@client.command(
+@client.slash_command(
     name="member",
-    brief="Displays member registration data.",
-    description="Displays member registration data.",
-    extras={"tags": ["general", "officer"]},
+    description="Displays a member's registration data.",
 )
-async def member_data(ctx: commands.Context, mentioned_user: discord.Member):
+async def member_data(ctx: discord.ApplicationContext, user: Option(discord.Member, "Member to show data.", required=False)):
     """!member <@user>
     Displays member registration data.
     TODO: `@user` can be replaced with just `USERID`."""
 
-    logging.debug(mentioned_user)
+    user = user or ctx.author
 
-    if mentioned_user is None:
-        await ctx.reply(embed=create_embed("Make sure this member is in the server!"))
-        return
-
-    name = mentioned_user.name
-    uid = mentioned_user.id
+    name = user.name
+    uid = user.id
     data = members.get_member_by_discord(uid)
     embed = discord.Embed(title=f"Member data for {name}", color=EMBED_COLOR)
     if data is not None:
         for field in data.__dict__["__data__"]:
+            if field == "alias":
+                data.__dict__["__data__"][field] = user.mention
+
             embed.add_field(
-                name=field,
+                name=field.title(),
                 value=data.__dict__["__data__"][field],
             )
     else:
-        embed.description = f"{name} has not yet started the verification process."
+        embed.description = f"{user.mention} has not yet started the verification process."
 
-    await ctx.reply(embed=embed)
+    await ctx.respond(embed=embed, ephemeral=True)
 
 
 @commands.dm_only()

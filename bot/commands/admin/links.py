@@ -11,17 +11,16 @@ from bot.database.links import purge_links, batch_insert_links, get_links_by_cha
 
 @commands.guild_only()
 @commands.has_role("officer")
-@client.command(
+@client.slash_command(
     name="rebuildlinks",
-    brief="Drop all links and re-scrape the server.",
-    description="Drop all links and re-scrape the server. USE SPARINGLY.",
+    description="Drop all links and re-scrape the server. (very slow)"
 )
-async def rebuild_links(ctx: commands.Context) -> None:
+async def rebuild_links(ctx: discord.ApplicationContext) -> None:
     """!rebuildlinks
     Drop all links and re-scrape the server. USE SPARINGLY."""
 
     purge_links()
-    await ctx.reply("Rebuilding link store. This will take a long time.")
+    interaction = await ctx.respond("Rebuilding link store. This will take a long time.")
 
     channels = client.guild.text_channels
     logging.info("Got text channels " + str(channels))
@@ -37,18 +36,16 @@ async def rebuild_links(ctx: commands.Context) -> None:
 
         batch_insert_links(channel_links)
     logging.info("Link rebuild completed.")
-    await ctx.reply("Link rebuild completed.")
+    await interaction.followup.send("Link rebuild completed.")
 
 
 # @client.register("!links", (0, 0), {"officer": False, "dm": False, "channel": True})
 @commands.guild_only()
-@client.command(
+@client.slash_command(
     name="links",
-    brief="Collect all the links from the channel.",
-    description="Sends the sender a text file containing all links from the channel the message was sent "
-    "in.",
+    description="Collect all the links from the channel."
 )
-async def links(ctx: commands.Context) -> None:
+async def links(ctx: discord.ApplicationContext) -> None:
     """!links
     Sends the sender a text file containing all links from the channel the message was sent in."""
 
@@ -56,11 +53,10 @@ async def links(ctx: commands.Context) -> None:
     logging.debug(f"Got links requested by {ctx.author}.")
 
     if not url_strings:
-        await ctx.author.send(f"No links available for channel {ctx.channel.mention}")
+        await ctx.respond(f"No links available for channel {ctx.channel.mention}")
     else:
         linklist = io.BytesIO(bytes("\n".join(url_strings), "utf-8"))
         linkfile = discord.File(
             linklist, filename="links-{}.txt".format(ctx.channel.id)
         )
-        await ctx.author.send(f"Here are your links from channel {ctx.channel.mention}")
-        await ctx.author.send(file=linkfile)
+        await ctx.respond(f"Here are your links from channel {ctx.channel.mention}:", file=linkfile)
