@@ -8,7 +8,8 @@ import traceback
 import discord
 from discord import RawReactionActionEvent, Message
 from discord.ext import commands
-from discord.ext.commands import MissingRequiredArgument, CommandNotFound, MissingRole
+from discord.ext.commands import MissingRequiredArgument, CommandNotFound, MissingRole, NoPrivateMessage, \
+    PrivateMessageOnly
 
 from bot import client, constants, LIVE_CTF_CATEGORY, URL_REGEX
 from bot.database.links import batch_insert_links
@@ -188,6 +189,18 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
         await ctx.reply(
             embed=embed
         )
+
+
+@client.event
+async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
+    if isinstance(error, NoPrivateMessage):
+        await ctx.respond("This command can only be used in a server.", ephemeral=True)
+    elif isinstance(error, PrivateMessageOnly):
+        await ctx.respond("This command can only be used in a private message.", ephemeral=True)
+    elif isinstance(error, MissingRole):
+        await ctx.respond("You do not have the sufficient permissions to do this! :/", ephemeral=True)
+    else:
+        await ctx.respond("An error occurred, this incident has been reported.")
 
 
 @client.event
