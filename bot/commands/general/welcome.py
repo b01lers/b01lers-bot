@@ -30,8 +30,10 @@ We have an internal CTF server for practice too: <https://internal.b01lers.com/h
 own past CTFs and bootcamps! Ask questions in #internal-ctf about that and we will help out!
 
 If you're interested in learning certain categories or specific skills, there are a couple good learning resources:
-Cryptography: <https://cryptohack.org/> Binary Exploitation: <https://pwn.college/> Web: there's no obvious winner
-here that I know of... :( <https://overthewire.org/wargames/natas/ is okay, maybe someone else has a better resource
+* Cryptography: <https://cryptohack.org/> 
+* Binary Exploitation: <https://pwn.college/> 
+* Web: there's no obvious winner here that I know of... :( <https://overthewire.org/wargames/natas/ is okay,
+  maybe someone else has a better resource
 
 Picoctf is an easier competition with many categories that is always on and generally really good.
 

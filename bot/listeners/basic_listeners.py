@@ -14,6 +14,7 @@ from discord.ext.commands import MissingRequiredArgument, CommandNotFound, Missi
 from bot import client, constants, LIVE_CTF_CATEGORY, URL_REGEX
 from bot.database.links import batch_insert_links
 from bot.helpers import participation
+from bot.helpers.decorators import OfficerOnly
 from bot.helpers.participation import give_message_points, give_ctf_message_points
 from bot.utils.messages import create_embed
 
@@ -197,9 +198,10 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
         await ctx.respond("This command can only be used in a server.", ephemeral=True)
     elif isinstance(error, PrivateMessageOnly):
         await ctx.respond("This command can only be used in a private message.", ephemeral=True)
-    elif isinstance(error, MissingRole):
+    elif isinstance(error, MissingRole) or isinstance(error, OfficerOnly):
         await ctx.respond("You do not have the sufficient permissions to do this! :/", ephemeral=True)
     else:
+        logging.error(error)
         await ctx.respond("An error occurred, this incident has been reported.")
 
 

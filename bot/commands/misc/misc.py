@@ -1,6 +1,7 @@
 import discord
 from discord import Option
 from discord.ext import commands
+from owoify import owoify
 
 from bot import client
 from bot.helpers import participation
@@ -60,9 +61,14 @@ async def do_dm(ctx: discord.ApplicationContext,
 #     return
 
 # @client.register("!echo", (0, 5000))
-@client.slash_command(
-    name="echo",
-    description="Does what you think it does."
+
+
+echo_command_group = client.create_group("echo", "Does what you think it does.")
+
+
+@echo_command_group.command(
+    name="normal",
+    description="Does what you think it does normally."
 )
 async def do_echo(ctx: discord.ApplicationContext, message: Option(str, "Message to echo", required=False, default="")):
     """!echo <message>
@@ -71,3 +77,19 @@ async def do_echo(ctx: discord.ApplicationContext, message: Option(str, "Message
         await ctx.respond("Echo!")
     else:
         await ctx.respond(message)
+
+
+@echo_command_group.command(
+    name="uwu",
+    description="*nuzzles* Wet's wepeat youw wowds i-in a cute way!"
+)
+async def do_uwu_echo(ctx: discord.ApplicationContext,
+                      message: Option(str, "*nuzzles* Sweet things you wanted to s-say to me", required=False)):
+    """!echo <message>
+    Does what you think it does."""
+    if not message:
+        await ctx.respond("Hey senpai! P-Pwease say something t-t-to m-me OwO!")
+    else:
+        await ctx.respond(
+            owoify(message, 'uvu')
+        )

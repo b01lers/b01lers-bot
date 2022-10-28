@@ -63,7 +63,7 @@ async def collect_chat_log_to_file(
     return os.path.basename(chat_log.name)
 
 
-async def archive_and_gzip_chat_log(ctx: commands.Context):
+async def archive_and_gzip_chat_log(ctx: discord.ApplicationContext):
     """Archive a channel with all its threads and gzip its chat log."""
     temp_dir = tempfile.TemporaryDirectory()
     pwd = os.getcwd()

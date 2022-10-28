@@ -193,18 +193,3 @@ async def member_data(ctx: discord.ApplicationContext, user: Option(discord.Memb
         embed.description = f"{user.mention} has not yet started the verification process."
 
     await ctx.respond(embed=embed, ephemeral=True)
-
-
-@commands.dm_only()
-@decorators.officer_only()
-@client.command(
-    name="lookup",
-    brief="Lookup student with specified email address",
-    extras={"tags": ["general", "officer"]},
-)
-async def lookup(ctx: commands.Context, email: str) -> None:
-    name, err = await get_student_name_from_email_from_directory(email)
-    if err:
-        await ctx.reply("Error: " + err)
-        return
-    await ctx.reply(name)

@@ -1,6 +1,7 @@
 import datetime
 
 import discord
+from discord import Option
 from discord.ext import commands
 
 from bot import client, logging, rank_constants
@@ -46,13 +47,11 @@ async def server_rank(ctx: discord.ApplicationContext):
 
 
 # @client.register("!stats", (0, 0))
-@client.command(
+@client.slash_command(
     name="stats",
-    brief="Displays your CTF solve statistics.",
-    description="Displays your CTF solve statistics.",
-    extras={"tags": ["fun"]},
+    description="Displays your CTF solve statistics."
 )
-async def server_stats(ctx: commands.Context):
+async def server_stats(ctx: discord.ApplicationContext):
     """!stats
     Displays your CTF solve statistics."""
 
@@ -71,16 +70,14 @@ async def server_stats(ctx: commands.Context):
 
     # TODO: Add an embedded image with a horizontal stacked bar graph that allows users to visualize the percentages. #
 
-    await ctx.channel.send(embed=embed)
+    await ctx.respond(embed=embed)
 
 
-@client.command(
+@client.slash_command(
     name="leaderboard",
-    brief="Displays the top 10 highest-point members in the server.",
-    description="Displays the top 10 highest-point members in the server.",
-    extras={"tags": ["fun"]},
+    description="Displays the top 10 highest-point members in the server."
 )
-async def leaderboard(ctx: commands.Context):
+async def leaderboard(ctx: discord.ApplicationContext):
     """!leaderboard
     Displays the top 10 highest-point members in the server."""
 
@@ -97,7 +94,7 @@ async def leaderboard(ctx: commands.Context):
     top = get_top_scorers(10)
 
     if len(top) == 0:
-        await ctx.reply("There is currently no data on the server!")
+        await ctx.respond("There is currently no data on the server!", ephemeral=True)
         return
 
     position = 1
@@ -135,19 +132,18 @@ async def leaderboard(ctx: commands.Context):
     embed.set_footer(text="Last updated on")
     embed.timestamp = datetime.datetime.now()
 
-    await ctx.channel.send(embed=embed)
+    await ctx.respond(embed=embed)
 
 
 # @client.register("!givepoints", (2, 2), {"dm": False, "officer": True})
-@commands.guild_only()
 @commands.has_role("officer")
-@client.command(
+@client.slash_command(
     name="givepoints",
-    brief="Gives participation points to the specified user.",
-    description="Gives participation points to the specified user.",
-    extras={"tags": ["fun", "officer"]},
+    description="Gives participation points to the specified user."
 )
-async def give_points(ctx: commands.Context, member: discord.Member, points: int):
+async def give_points(ctx: discord.ApplicationContext,
+                      member: Option(discord.Member, "Member to add points to"),
+                      points: Option(int, "Points")):
     """!givepoints <@user> <points>
     Gives participation points to the specified user."""
 
@@ -158,4 +154,7 @@ async def give_points(ctx: commands.Context, member: discord.Member, points: int
             ctx.author.name, points, member, member.id
         )
     )
-    await ctx.message.add_reaction(DONE_EMOJI)
+    if member == ctx.author:
+        await ctx.respond("Wow! You just gave yourself some points! (insert Obama medal meme here)")
+    else:
+        await ctx.respond("Done!")

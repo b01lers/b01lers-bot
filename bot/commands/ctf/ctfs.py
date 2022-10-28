@@ -4,7 +4,7 @@ from typing import Union
 
 import discord
 import email_validator
-from discord import TextChannel
+from discord import TextChannel, Option, ChannelType
 from discord.ext import commands
 
 from bot import client, logging, database
@@ -24,17 +24,18 @@ MemberOrRole = Union[discord.Member, discord.Role]
 
 
 # @client.register("!competition", (4, 4), {"officer": True})
-@commands.guild_only()
+@discord.guild_only()
 @commands.has_role("officer")
-@client.command(
+@client.slash_command(
     name="competition",
-    aliases=["comp"],
-    brief="Creates a competition channel.",
-    description="Creates a competition channel.",
-    extras={"tags": ["ctf", "officer"]},
+    description="Creates a competition channel."
 )
 async def make_competition(
-    ctx: commands.Context, title: str, description: str, username: str, password: str
+    ctx: discord.ApplicationContext,
+    title: Option(str, "Competition title"),
+    description: Option(str, "Competition description"),
+    username: Option(str, "Competition login username"),
+    password: Option(str, "Competition login password")
 ):
     """!competition "<channel name>" "<description>" "<username>" "<password>"
     Creates a competition channel."""
@@ -43,7 +44,7 @@ async def make_competition(
     ctf_category = client.ctfs
     if ctf_category not in client.guild.categories:
         message = "Unable to find live CTF category."
-        await ctx.reply(embed=create_embed("The `live ctfs` category cannot be found."))
+        await ctx.respond(embed=create_embed("The `live ctfs` category cannot be found."), ephemeral=True)
         logging.error(message)
         return
 
@@ -52,8 +53,8 @@ async def make_competition(
         ctf_category.channels, name=title.replace(" ", "-").lower()
     )
     if check_channel:
-        await ctx.reply(
-            f"The channel for **{title}** already exists: {check_channel.mention}."
+        await ctx.respond(
+            f"The channel for **{title}** already exists: {check_channel.mention}.", ephemeral=True
         )
         return
 
@@ -62,7 +63,7 @@ async def make_competition(
         title,
         position=0,
         topic=f"Channel for {title}, please check pinned message for shared credentials. (for officers: type !archive "
-        f"to archive)",
+              f"to archive)",
     )
 
     embed = discord.Embed(
@@ -73,60 +74,58 @@ async def make_competition(
 
     pinned_message = await channel.send(embed=embed)
     await pinned_message.pin()
-    await ctx.reply(
+    await ctx.respond(
         f"You just created a channel for **{title}**, discuss it with your friends in {channel.mention}!"
     )
 
 
-@commands.guild_only()
-@client.command(
-    name="chal",
-    aliases=["challenge"],
-    brief="Creates a challenge thread.",
-    description="Creates a channel for a single thread during a CTF.",
-    extras={"tags": ["ctf", "officer"]},
+@discord.guild_only()
+@client.slash_command(
+    name="challenge",
+    description="Creates a challenge thread in a live CTF channel."
 )
-async def create_challenge_thread(ctx: commands.Context, challenge: str):
+async def create_challenge_thread(ctx: discord.ApplicationContext, challenge: Option(str, "Challenge name")):
     # Check if the message is sent in a live ctf channel
     if ctx.channel.category_id != client.ctfs.id:
-        await ctx.channel.send(
+        await ctx.respond(
             embed=create_embed(
                 "This command can only be used in a `live ctfs` channel."
-            )
+            ),
+            ephemeral=True
         )
         return
 
     if (
-        ctx.channel.type == discord.ChannelType.public_thread
-        or ctx.channel.type == discord.ChannelType.private_thread
+            ctx.channel.type == discord.ChannelType.public_thread
+            or ctx.channel.type == discord.ChannelType.private_thread
     ):
-        await ctx.reply("You cannot create a thread inside a thread!")
+        await ctx.respond("You cannot create a thread inside a thread!", ephemeral=True)
         return
 
     # FIXME: Allow long name
     challenge = challenge.replace(" ", "-").lower()
     thread = discord.utils.get(ctx.channel.threads, name=challenge)
     if thread:
-        await ctx.reply(f"This thread already exists, please check {thread.mention}.")
+        await ctx.respond(f"This thread already exists, please check {thread.mention}.", ephemeral=True)
         return
 
     try:
         # Create a thread and archive it after 3 days (4320 minutes)
-        thread = await ctx.message.create_thread(
-            name=challenge, auto_archive_duration=4320
+        thread = await ctx.channel.create_thread(
+            name=challenge, auto_archive_duration=4320, type=ChannelType.public_thread
         )
-        await ctx.reply(
+        await ctx.respond(
             f"I have created a challenge thread for {thread.mention} as per {ctx.author.mention}'s request."
         )
     except Exception as e:
-        await ctx.reply("Unable to start a thread.")
+        await ctx.respond("Unable to start a thread.", ephemeral=True)
         logging.error("Unable to make a thread", e)
 
 
 async def archive_and_lock_channel(channel: TextChannel):
     if (
-        channel.type == discord.ChannelType.public_thread
-        or channel.type == discord.ChannelType.private_thread
+            channel.type == discord.ChannelType.public_thread
+            or channel.type == discord.ChannelType.private_thread
     ):
         # Lock thread
         await channel.edit(archived=True, locked=True)
@@ -145,14 +144,11 @@ async def archive_and_lock_channel(channel: TextChannel):
 # @client.register("!archive", (0, 0), {"dm": False, "officer": True})
 @commands.guild_only()
 @commands.has_role("officer")
-@client.command(
+@client.slash_command(
     name="archive",
-    brief="Archives the current competition channel as well as its challenge threads.",
-    description="Archives the current competition channel from the Live CTFs category, as well as "
-    "challenge threads if they exist.",
-    extras={"tags": ["ctf", "officer"]},
+    description="Archives the current competition channel/thread as well as its challenge threads, if it has any."
 )
-async def archive_competition(ctx: commands.Context):
+async def archive_competition(ctx: discord.ApplicationContext):
     """!archive
     Archives the current competition channel from the Live CTFs category, as well as challenge channels if they exist.
     If used in a challenge-specific channel, deletes the channel and sends a log of the chat to the main competition channel."""
@@ -160,13 +156,13 @@ async def archive_competition(ctx: commands.Context):
     # FIXME: Fix it for thread
     # Check if it's a live CTF channel
     if ctx.channel.category_id != client.ctfs.id:
-        await ctx.reply("You cannot archive a non live CTF channel!")
+        await ctx.respond("You cannot archive a non live CTF channel!", ephemeral=True)
         return
 
     # If this is a thread, archive it
     if (
-        ctx.channel.type == discord.ChannelType.public_thread
-        or ctx.channel.type == discord.ChannelType.private_thread
+            ctx.channel.type == discord.ChannelType.public_thread
+            or ctx.channel.type == discord.ChannelType.private_thread
     ):
         description = "thread for challenge"
     else:
@@ -176,7 +172,7 @@ async def archive_competition(ctx: commands.Context):
     # I don't know why the hell this won't work here but I'll leave it for now.
     # Probably due to async environment?
     # logging.debug("Created archive file at", file.name.lower())
-    await ctx.channel.send(
+    await ctx.respond(
         f"This {description} {ctx.channel.name} is now archived as per {ctx.author.mention}'s request, and its chat log is attached below:",
         file=discord.File(file.name),
     )
@@ -190,91 +186,88 @@ async def archive_competition(ctx: commands.Context):
 
 
 # @client.register("!invite", (1, 4), {"dm": False, "officer": True})
-@commands.guild_only()
+@discord.guild_only()
 @commands.has_role("officer")
-@client.command(
+@client.slash_command(
     name="invite",
-    brief="Gives roles or users access to a CTF channel.",
-    description="Gives roles or users access to a CTF channel.",
-    extras={"tags": ["ctf", "officer"]},
+    description="Grant roles or users access to a CTF channel."
 )
-async def invite(ctx: commands.Context, *args: MemberOrRole):
-    """!invite <@mention-1> [@mention-2] [@mention-3] [@mention-4] ...
-    Gives roles or users access to a CTF channel."""
+async def invite(ctx: discord.ApplicationContext, member_or_role: Option(MemberOrRole, "Member or role")):
+    """!invite <member/role>
+    Gives a role or user access to a CTF channel."""
+
+    # NOTE: Discord limitation disallows for variable length arguments.
 
     if not ctx.channel.category.name.lower() == "live ctfs":
-        await ctx.channel.send(
-            embed=create_embed("Please use this command in a live ctfs channel only!")
+        await ctx.respond(
+            embed=create_embed("Please use this command in a live CTF channel only!"),
+            ephemeral=True
         )
         return
 
-    successful_joins = []
-    for obj in args:
-        try:
-            await ctx.channel.set_permissions(
-                obj, read_messages=True, send_messages=True
-            )
-            successful_joins.append(obj)
-        except:
-            await ctx.channel.send(
-                embed=create_embed(f"Could not invite {obj} to channel.")
-            )
+    try:
+        await ctx.channel.set_permissions(
+            member_or_role, read_messages=True, send_messages=True
+        )
+    except:
+        await ctx.respond(
+            embed=create_embed(f"Could not invite {member_or_role.mention} to channel."),
+            ephemeral=True
+        )
+        return
 
-    await ctx.channel.send(
-        embed=create_embed(f"Have fun, {', '.join(successful_joins)}!")
+    await ctx.respond(
+        f"Have fun, {member_or_role.mention}!"
     )
 
 
 # @client.register("!uninvite", (1, 4), {"dm": False, "officer": True})
-@commands.guild_only()
+@discord.guild_only()
 @commands.has_role("officer")
-@client.command(
+@client.slash_command(
     name="uninvite",
-    brief="Removes roles' or users' access from a CTF channel.",
-    description="Removes roles' or users' access from a CTF channel.",
-    extras={"tags": ["ctf", "officer"]},
+    description="Revoke roles' or users' access from a CTF channel."
 )
-async def uninvite(ctx: commands.Context, *args: MemberOrRole):
+async def uninvite(ctx: discord.ApplicationContext, member_or_role: Option(MemberOrRole, "Member or role")):
     """!uninvite <@mention-1> [@mention-2] [@mention-3] [@mention-4] ...
     Removes roles' or users' access from a CTF channel."""
 
     if not ctx.channel.category.name.lower() == "live ctfs":
-        await ctx.channel.send(
-            embed=create_embed("Please use this command in a live ctfs channel only!")
+        await ctx.respond(
+            embed=create_embed("Please use this command in a live ctfs channel only!"),
+            ephemeral=True
         )
         return
 
-    successful_leaves = []
-    for obj in args:
-        try:
-            await ctx.channel.set_permissions(
-                obj, read_messages=False, send_messages=False
-            )
-            successful_leaves.append(obj)
-        except:
-            await ctx.channel.send(
-                embed=create_embed(f"Could not remove {obj} from channel.")
-            )
+    try:
+        await ctx.channel.set_permissions(
+            member_or_role, read_messages=False, send_messages=False
+        )
+    except:
+        await ctx.respond(
+            embed=create_embed(f"Could not remove {member_or_role.mention} from channel."),
+            ephemeral=True
+        )
+        return
 
-    await ctx.channel.send(
-        embed=create_embed(f"Goodbye, {', '.join(successful_leaves)}. :pensive:")
-    )
+    await ctx.respond(f"Goodbye, {member_or_role.mention}. :pensive:")
+
+
+bootcamp_commands_group = client.create_group("bootcamp", "Bootcamp related commands")
 
 
 # @client.register("!ctfregister", (1, 4), {"channel": False})
 @commands.dm_only()
-@client.command(
-    name="ctfregister",
-    brief="Registers a team for the b00tcamp CTF.",
-    description="Registers a team for the b00tcamp CTF with you and up to three more teammates.",
-    extras={"tags": ["bootcamp"]},
+@bootcamp_commands_group.command(
+    name="register",
+    description="Registers a team for the b00tcamp CTF with you and up to three more teammates."
 )
 async def ctf_register(
-    ctx: commands.Context,
-    leader_email: str,
-    tm1: str = "",
-    tm2: str = "",
-    tm3: str = "",
+        ctx: discord.ApplicationContext,
+        leader_email: Option(str, "Team leader email"),
+        tm1: Option(str, "Teammate 1 email", required=False),
+        tm2: Option(str, "Teammate 2 email", required=False),
+        tm3: Option(str, "Teammate 3 email", required=False),
 ):
     """
     !ctfregister <youremail@purdue.edu> [teammate1@purdue.edu] [teammate2@purdue.edu] [teammate3@purdue.edu]
@@ -285,8 +278,8 @@ async def ctf_register(
     seen = set()
     uniq = [tm for tm in everyone if tm not in seen and not seen.add(tm)]
     if len(uniq) != len(everyone):
-        await ctx.reply(
-            "You have duplicates in your command, please check before proceeding."
+        await ctx.respond(
+            "You have duplicates in your command, please check before proceeding.", ephemeral=True
         )
         return
 
@@ -295,23 +288,25 @@ async def ctf_register(
         try:
             valid = email_validator.validate_email(email)
             if valid.domain != "purdue.edu":
-                await ctx.reply(f"{email} is not a @purdue.edu email.")
+                await ctx.respond(f"{email} is not a @purdue.edu email.", ephemeral=True)
                 return
         except email_validator.EmailNotValidError:
-            await ctx.reply(f"{email} is not a valid email.")
+            await ctx.respond(f"{email} is not a valid email.", ephemeral=True)
             return
 
     # Validate leader user's verification status
     leader_discord_member = database.members.get_member_by_discord(ctx.author.id)
     if leader_discord_member is None:
-        await ctx.reply(
-            "You haven't registered with me yet! Use `!verify <your-email@purdue.edu>` to verify yourself."
+        await ctx.respond(
+            "You haven't registered with me yet! Use `!verify <your-email@purdue.edu>` to verify yourself.",
+            ephemeral=True
         )
         return
 
     if leader_discord_member.email != leader_email:
-        await ctx.reply(
-            f"Your provided email does not match the record for your username. Try using {leader_discord_member.email} instead."
+        await ctx.respond(
+            f"Your provided email does not match the record for your username. Try using {leader_discord_member.email} instead.",
+            ephemeral=True
         )
         return
 
@@ -319,8 +314,9 @@ async def ctf_register(
     for teammate in everyone[1:]:
         test_entry = get_team_by_email(teammate)
         if test_entry and test_entry.register_email != leader_email:
-            await ctx.reply(
-                f"The teammate you specified ({teammate}) has already registered for a team!"
+            await ctx.respond(
+                f"The teammate you specified ({teammate}) has already registered for a team!",
+                ephemeral=True
             )
             return
 
@@ -328,8 +324,9 @@ async def ctf_register(
     # TODO: Implement a leave team feature
     entry = get_team_by_leader_email(leader_email)
     if entry and entry.register_email != leader_email:
-        await ctx.reply(
-            "You have already joined a team! Please remove yourself first from that team first before proceeding."
+        await ctx.respond(
+            "You have already joined a team! Please remove yourself first from that team first before proceeding.",
+            ephemeral=True
         )
         return
 
@@ -339,54 +336,55 @@ async def ctf_register(
         add_team(leader_email, tm1, tm2, tm3)
         # 1.1 Solo
         if len(everyone) == 1:
-            await ctx.reply(
-                "Looks like you're playing by yourself! That's perfectly fine, we're sure you'll get a lot out of it. If you change your mind, you can run this command again with any teammates."
+            await ctx.respond(
+                "Looks like you're playing by yourself! That's perfectly fine, we're sure you'll get a lot out of it. If you change your mind, you can run this command again with any teammates.",
+                ephemeral=True
             )
         else:
-            await ctx.reply("You're all signed up. :)")
+            await ctx.respond("You're all signed up. :)", ephemeral=True)
         return
 
     # Scenario 2. If the leader has already registered and wanted to update
     update_ctf_team_entry(entry, leader_email, tm1, tm2, tm3)
 
-    await ctx.reply(
-        "You are already registered as a team leader. I am updating this registration to be just you. If this is an error, just run it again with the right people."
+    await ctx.respond(
+        "You are already registered as a team leader. I am updating this registration to be just you. If this is an error, just run it again with the right people.",
+        ephemeral=True
     )
 
 
 @commands.dm_only()
-@client.command(
-    name="ctfunregister",
-    brief="Unregisters yourself from the b00tcamp CTF.",
-    description="Unregisters yourself from the b00tcamp CTF.",
-    extras={"tags": ["bootcamp"]},
+@bootcamp_commands_group.command(
+    name="unregister",
+    description="Unregisters yourself from the b00tcamp CTF."
 )
-async def unregister(ctx: commands.Context):
+async def unregister(ctx: discord.ApplicationContext):
     # Check if member exists
     member = get_member_by_discord(ctx.author.id)
     if not member or member.validated != 1:
-        await ctx.reply(
-            "It seems that you haven't verified yourself yet, so you should be safe from entering a team."
+        await ctx.respond(
+            "It seems that you haven't verified yourself yet, so you should be safe from entering a team.",
+            ephemeral=True
         )
         return
 
     entry = get_team_by_email(member.email)
     if not entry:
-        await ctx.reply(
-            "You haven't registered for the b00tcamp ctf yet, but you can still participate via `!ctfregister` :)"
+        await ctx.respond(
+            "You haven't registered for the b00tcamp ctf yet, but you can still participate via `!ctfregister` :)",
+            ephemeral=True
         )
         return
 
     # TODO: Implement team disband feature
     if entry.register_email == member.email:
-        await ctx.reply("", view="aa")
+        await ctx.respond("", view="aa", ephemeral=True)
     else:
-
-        await ctx.reply()
+        await ctx.respond("", ephemeral=True)
 
 
 @commands.dm_only()
-@client.slash_command(
+@bootcamp_commands_group.command(
     name="survey",
     description="Take a survey about our bootcamp ctf."
 )
@@ -417,21 +415,20 @@ async def survey(ctx: discord.ApplicationContext):
             await interaction.response.send_message(
                 "Thank you for taking the survey! Your submission has been recorded."
             )
+
     # TODO: Do necessary checks here
     await ctx.send_modal(SurveyModal(title="Bootcamp CTF Survey"))
+
 
 # @client.register("!registrations", (0, 0), {"channel": False, "officer": True})
 @decorators.officer_only()
 @commands.dm_only()
-@client.command(
-    name="registrations",
-    brief="List all teams that registered for b00tcamp CTF.",
-    description="Prints a list of registered b00tcamp CTF teams.",
-    extras={"tags": ["bootcamp", "officer"]},
+@bootcamp_commands_group.command(
+    name="list",
+    description="List all teams that registered for b00tcamp CTF."
 )
-async def show_registrations(ctx: commands.Context):
-    """!registrations
-    Prints a list of registered b00tcamp CTF teams."""
+async def show_registrations(ctx: discord.ApplicationContext):
+    """Prints a list of registered b00tcamp CTF teams."""
 
     records = database.bootcamp.get_all_teams()
 
@@ -466,4 +463,4 @@ async def show_registrations(ctx: commands.Context):
         inline=True,
     )
 
-    await ctx.reply(embed=embed)
+    await ctx.respond(embed=embed, ephemeral=True)

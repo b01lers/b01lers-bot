@@ -11,3 +11,5 @@ aiohttp
 aiodns
 brotlipy
 cchardet
+# Some weeb and fun stuff
+owoify-py
