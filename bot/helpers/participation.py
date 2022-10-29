@@ -1,3 +1,5 @@
+import discord
+
 from bot import logging, utils
 from bot.constants import *
 from bot.database.points import (
@@ -52,9 +54,15 @@ def give_yeet_points(message, reacter: int) -> None:
         add_points(uid, POINTS_PER_YEET)
 
 
-def give_voice_points(member):
-    uid = member.id
+def give_voice_points(uid: int, minutes: int):
+    if minutes == 0:
+        return
     today = get_recent_user_points_changes(uid, VOICE_MINUTE_TYPE(), SECONDS_PER_DAY)
     if today < MAX_VOICE_POINTS_PER_DAY:
-        add_transaction(uid, VOICE_MINUTE_TYPE(), POINTS_PER_VOICE_MINUTE)
-        add_points(uid, POINTS_PER_VOICE_MINUTE)
+        points = min(minutes * POINTS_PER_VOICE_MINUTE, MAX_VOICE_POINTS_PER_DAY - today)
+        add_transaction(uid, VOICE_MINUTE_TYPE(), points)
+        add_points(uid, points)
+
+
+def is_ctf_voice_channel(channel: discord.VoiceChannel) -> bool:
+    return channel.category_id == LIVE_CTF_CATEGORY or "challenges" in channel.category.name.lower()

@@ -24,6 +24,8 @@ class B01lersBot(Bot):
     archive = None
     me: Member = None
     ranks = None
+    voice_chatters: dict[int, int] = {}
+
 
     async def get_member(self, uid: Union[int, str]) -> Optional[Member]:
         """Get a member from guild."""

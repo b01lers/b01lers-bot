@@ -15,8 +15,9 @@ from bot import client, constants, LIVE_CTF_CATEGORY, URL_REGEX
 from bot.database.links import batch_insert_links
 from bot.helpers import participation
 from bot.helpers.decorators import OfficerOnly
-from bot.helpers.participation import give_message_points, give_ctf_message_points
-from bot.utils.messages import create_embed
+from bot.helpers.participation import give_message_points, give_ctf_message_points, is_ctf_voice_channel, \
+    give_voice_points
+from bot.utils.messages import create_embed, get_epoch_timestamp
 
 
 @client.event
@@ -170,6 +171,38 @@ async def on_message(message: Message) -> None:
                 await client.update_rank(message.author)
 
     await client.process_commands(message)
+
+
+@client.event
+async def on_voice_state_update(member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+    is_before_ctf_voice = before.channel is not None and is_ctf_voice_channel(before.channel)
+    is_after_ctf_voice = after.channel is not None and is_ctf_voice_channel(after.channel)
+
+    if not is_before_ctf_voice and is_after_ctf_voice:
+        # If joined a CTF voice channel, or transferred from another voice channel.
+        # If there is already someone in vc, we want to update their entry time too.
+        if len(client.voice_chatters.keys()) == 1:
+            client.voice_chatters[next(iter(client.voice_chatters))] = get_epoch_timestamp()
+        # Add new member to vc list
+        client.voice_chatters[member.id] = get_epoch_timestamp()
+    elif is_before_ctf_voice and not is_after_ctf_voice:
+        # If the leaver is the only one left in channel
+        if len(client.voice_chatters.keys()) == 1:
+            client.voice_chatters.pop(member.id)
+            return
+        # If leaves a CTF voice channel, or transfer to another non-CTF voice channel.
+        join_timestamp = client.voice_chatters.pop(member.id)
+        if not join_timestamp:
+            return
+        minutes_elapsed = int((get_epoch_timestamp() - join_timestamp) / 60)
+        await give_voice_points(member.id, minutes_elapsed)
+        # If there is only one person left in vc, end their time calculation at the same time.
+        if len(client.voice_chatters.keys()) == 1:
+            loner_member_id = next(iter(client.voice_chatters))
+            # Only pop when the loner leaves
+            loner_join_timestamp = client.voice_chatters[loner_member_id]
+            await give_voice_points(loner_member_id, int((get_epoch_timestamp() - loner_join_timestamp) / 60))
+    logging.debug(client.voice_chatters)
 
 
 @client.event
