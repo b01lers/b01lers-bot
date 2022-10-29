@@ -179,7 +179,7 @@ async def review(ctx: discord.ApplicationContext, approval_id: Option(int, "ID o
     embed = discord.Embed(title=f"Request #{approval_id}", color=EMBED_COLOR)
 
     embed.add_field(
-        name="type",
+        name="Type",
         value=approval.type,
     )
 
@@ -191,14 +191,14 @@ async def review(ctx: discord.ApplicationContext, approval_id: Option(int, "ID o
             for t in data[k]:
                 user = await client.get_member(t)
                 mentions.append(user.mention)
-            embed.add_field(name="teammates", value=", ".join(mentions))
+            embed.add_field(name=str(k).title(), value=", ".join(mentions))
         elif k == "cid":
-            embed.add_field(name="ctf", value=client.get_channel(data[k]).mention)
+            embed.add_field(name=str(k).title(), value=client.get_channel(data[k]).mention)
         else:
-            embed.add_field(name=str(k), value="`" + str(data[k]) + "`")
+            embed.add_field(name=str(k).title(), value="`" + str(data[k]) + "`")
 
     embed.add_field(
-        name="status",
+        name="Status",
         value=(WAITING_EMOJI, DONE_EMOJI, CANCEL_EMOJI)[approval.approved]
               + " **"
               + APPROVAL_VALUES[approval.approved]
