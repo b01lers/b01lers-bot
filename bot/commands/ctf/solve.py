@@ -76,7 +76,7 @@ async def handle_approval(aid: int, approved: bool) -> bool:
 async def submit_solve(
         ctx: discord.ApplicationContext,
         challenge: Option(str, "Challenge name"),
-        category: Option(str, "Challenge category"),
+        category: Option(str, "Challenge category", autocomplete=discord.utils.basic_autocomplete(CTF_CHAL_CATEGORIES)),
         flag: Option(str, "Challenge flag"),
         tm1: Option(Member, "Teammate 1", required=False),
         tm2: Option(Member, "Teammate 2", required=False),
