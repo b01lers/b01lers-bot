@@ -2,7 +2,7 @@ import logging
 from typing import Optional, Union
 
 import discord
-from discord import Guild, Member, TextChannel
+from discord import Guild, Member, TextChannel, CategoryChannel
 from discord.ext.commands import Bot
 
 from bot import rank_constants, utils
@@ -20,12 +20,12 @@ class B01lersBot(Bot):
     general_channel: TextChannel = None
     approval_channel: TextChannel = None
     guild: Guild = None
-    ctfs = None
+    ctfs: CategoryChannel = None
     archive = None
     me: Member = None
+    is_bootcamp_running: bool = False
     ranks = None
     voice_chatters: dict[int, int] = {}
-
 
     async def get_member(self, uid: Union[int, str]) -> Optional[Member]:
         """Get a member from guild."""

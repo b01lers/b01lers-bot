@@ -11,5 +11,7 @@ aiohttp
 aiodns
 brotlipy
 cchardet
+# Timezone database
+tzdata
 # Some weeb and fun stuff
 owoify-py
