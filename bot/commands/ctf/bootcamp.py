@@ -43,7 +43,7 @@ async def ctf_register(
     """
 
     # TODO: Optimize this.
-    everyone = list(filter(lambda tm: tm != "", [leader_email, tm1, tm2, tm3]))
+    everyone = list(filter(lambda tm: tm and tm != "", [leader_email, tm1, tm2, tm3]))
     seen = set()
     uniq = [tm for tm in everyone if tm not in seen and not seen.add(tm)]
     if len(uniq) != len(everyone):
