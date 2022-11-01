@@ -24,12 +24,13 @@ async def do_yeet(ctx: discord.ApplicationContext):
         await ctx.respond("Yeet emoji is not configured yet... 😭", ephemeral=True)
         return
 
-    async for yeet_message in channel.history(limit=20):
+    await ctx.respond("Y33t!", ephemeral=True)
+
+    async for yeet_message in channel.history(limit=10):
         if not yeet_message.content.startswith("!yeet"):
             await yeet_message.add_reaction(yeet_emoji)
             if yeet_message.author.id not in (client.me.id, ctx.author.id):
                 participation.give_yeet_points(yeet_message, ctx.author.id)
-    await ctx.respond("Y33t!", ephemeral=True)
 
 
 @commands.has_role("officer")
