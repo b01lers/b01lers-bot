@@ -8,7 +8,8 @@ from bot.helpers import participation
 from bot.utils.messages import create_embed
 
 
-@commands.guild_only()
+@discord.guild_only()
+@commands.cooldown(1, 60 * 60 * 24, commands.BucketType.user) # A day
 @client.slash_command(
     name="yeet", description="Just y33t!"
 )
@@ -27,10 +28,9 @@ async def do_yeet(ctx: discord.ApplicationContext):
     await ctx.respond("Y33t!", ephemeral=True)
 
     async for yeet_message in channel.history(limit=10):
-        if not yeet_message.content.startswith("!yeet"):
-            await yeet_message.add_reaction(yeet_emoji)
-            if yeet_message.author.id not in (client.me.id, ctx.author.id):
-                participation.give_yeet_points(yeet_message, ctx.author.id)
+        await yeet_message.add_reaction(yeet_emoji)
+        if yeet_message.author.id not in (client.me.id, ctx.author.id):
+            participation.give_yeet_points(yeet_message, ctx.author.id)
 
 
 @commands.has_role("officer")

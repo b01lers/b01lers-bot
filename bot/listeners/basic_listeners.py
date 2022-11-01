@@ -233,8 +233,11 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
         await ctx.respond("This command can only be used in a private message.", ephemeral=True)
     elif isinstance(error, MissingRole) or isinstance(error, OfficerOnly):
         await ctx.respond("You do not have the sufficient permissions to do this! :/", ephemeral=True)
+    elif isinstance(error, commands.CommandOnCooldown):
+        await ctx.respond(f"This command is in cooldown for {error.retry_after} seconds.", ephemeral=True)
     else:
         logging.error(error)
+        await client.update_channel.send(error)
         await ctx.respond("An error occurred, this incident has been reported.")
 
 
