@@ -85,3 +85,15 @@ class Transaction(BaseModel):
     description = TextField()
     point_delta = IntegerField()
     timestamp = TimestampField(default=get_epoch_timestamp())
+
+
+class SelfGrantRole(BaseModel):
+    """Represents a self-grant role."""
+
+    class Meta:
+        db_table = "self_grant_roles"
+
+    role_id = IntegerField(unique=True)
+    label = TextField()
+    color = TextField()
+    emoji = TextField(null=True)

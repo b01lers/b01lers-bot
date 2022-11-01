@@ -14,7 +14,8 @@ DATABASE.create_tables(
         models.Member,
         models.Point,
         models.Transaction,
+        models.SelfGrantRole
     ]
 )
 
-__all__ = ["approval", "bootcamp", "members", "points", "models"]
+__all__ = ["approval", "bootcamp", "members", "points", "self_grant_roles", "models"]
