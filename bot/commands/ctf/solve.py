@@ -124,6 +124,7 @@ async def submit_solve(
 
         def __init__(self, *items: Item, timeout: Union[float, None] = 180.0, disable_on_timeout: bool = False):
             super().__init__(*items, timeout=timeout, disable_on_timeout=disable_on_timeout)
+            self.timeout = None
             self.aid = aid
 
         @discord.ui.button(label="Accept", style=discord.ButtonStyle.success, emoji="✅")
